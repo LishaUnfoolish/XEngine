@@ -1,4 +1,11 @@
 
+/***************************
+@Author: Xhosa-LEE
+@Contact: lixiaoxmm@163.com
+@Time: 2022/11/20
+@Desc: type name模板接口
+***************************/
+
 #pragma once
 #include <string_view>
 #include <type_traits>
