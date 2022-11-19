@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-
+# /***************************
+# @Author: Xhosa-LEE
+# @Contact: lixiaoxmm@163.com
+# @Time: 2022/11/20
+# @Desc: 部署docker环境时添加使用者的用户环境
+# ***************************/
 addgroup --gid "$DOCKER_GRP_ID" "$DOCKER_GRP"
 adduser --disabled-password --force-badname --gecos '' "$DOCKER_USER" --uid "$DOCKER_USER_ID" --gid "$DOCKER_GRP_ID" 2>/dev/null
 usermod -aG sudo "$DOCKER_USER"

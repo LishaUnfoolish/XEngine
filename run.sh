@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# /***************************
+# @Author: Xhosa-LEE
+# @Contact: lixiaoxmm@163.com
+# @Time: 2022/11/20
+# @Desc: 编译运行脚本
+# ***************************/
 
 function _usage() {
   echo -e "\n${RED}Usage${NO_COLOR}:

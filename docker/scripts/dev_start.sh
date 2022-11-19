@@ -1,4 +1,12 @@
 #!/usr/bin/env bash 
+# /***************************
+# @Author: Xhosa-LEE
+# @Contact: lixiaoxmm@163.com
+# @Time: 2022/11/20
+# @Desc: 部署、启动和运行docker
+# ***************************/
+
+
 DEV="lixiaoxmm/xengine:v1.3.xmake_1668767811"
 IMG="dockerproxy.com/${DEV}" 
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd -P )"
