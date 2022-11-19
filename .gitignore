@@ -1,0 +1,5 @@
+.vscode/
+build
+.xmake
+**/compile_commands.json
+.dev_bash_hist
