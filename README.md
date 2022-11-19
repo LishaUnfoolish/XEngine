@@ -2,7 +2,7 @@
 一个通用的框架
 
 注意:
-  本项目提供一个docker环境,方便测试使用
+  本项目提供一个docker环境,方便测试使用,也能直接在Ubuntu上运行,但需要安装xmake和clang15+
   
 #运行
 1.  ./docker/scripts/dev_start.sh start   #进入docker
