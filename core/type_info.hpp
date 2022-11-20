@@ -15,7 +15,7 @@ using type_index = std::type_index;
 using id_type = std::hash<std::type_index>::result_type;
 
 template <typename Type, typename = void>
-struct type_hash final {
+struct TypeHash final {
   [[nodiscard]] static constexpr id_type value() noexcept {
     return std::hash<std::type_index>{}(typeid(Type));
   }
