@@ -11,20 +11,20 @@
 #include <utility>
 
 namespace XEngine {
-using type_index = std::type_index;
-using id_type = std::hash<std::type_index>::result_type;
+using TypeIndex = std::type_index;
+using IdType = std::hash<std::type_index>::result_type;
 
 template <typename Type, typename = void>
 struct TypeHash final {
-  [[nodiscard]] static constexpr id_type value() noexcept {
+  [[nodiscard]] static constexpr IdType value() noexcept {
     return std::hash<std::type_index>{}(typeid(Type));
   }
-  [[nodiscard]] constexpr operator id_type() const noexcept { return value(); }
+  [[nodiscard]] constexpr operator IdType() const noexcept { return value(); }
 };
 
 template <auto Value>
 using integral_constant = std::integral_constant<decltype(Value), Value>;
-template <id_type Value>
+template <IdType Value>
 using tag = integral_constant<Value>;
 
 }  // namespace XEngine
