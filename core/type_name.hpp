@@ -2,7 +2,7 @@
 /***************************
 @Author: Xhosa-LEE
 @Contact: lixiaoxmm@163.com
-@Time: 2022/11/22
+@Time: 2022/11/23
 @Desc: type name模板接口
 ***************************/
 
@@ -10,7 +10,6 @@
 #include <string_view>
 #include <type_traits>
 
-#include "core/type_info.hpp"
 namespace XEngine {
 namespace internal {
 #define USED_FULL_TYPE_NAME false  //使用详细type name,is not a literal type.
