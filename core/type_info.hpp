@@ -22,10 +22,10 @@ struct TypeHash final {
 };
 
 template <auto Value>
-using integral_constant = std::integral_constant<decltype(Value), Value>;
+using IntegralConstant = std::integral_constant<decltype(Value), Value>;
 
 template <IdType Value>
-using tag = integral_constant<Value>;
+using tag = IntegralConstant<Value>;
 
 template <typename To, typename From>
 struct ConstnessAs {
@@ -43,14 +43,14 @@ class MemberClass {
   static_assert(std::is_member_pointer_v<Member>,
                 "Invalid pointer type to non-static member object or function");
   template <typename Class, typename Ret, typename... Args>
-  static Class *Clazz(Ret (Class::*)(Args...));
+  static Class *C(Ret (Class::*)(Args...));
   template <typename Class, typename Ret, typename... Args>
-  static Class *Clazz(Ret (Class::*)(Args...) const);
+  static Class *C(Ret (Class::*)(Args...) const);
   template <typename Class, typename Type>
-  static Class *Clazz(Type Class::*);
+  static Class *C(Type Class::*);
 
  public:
-  using type = std::remove_pointer_t<decltype(Clazz(std::declval<Member>()))>;
+  using type = std::remove_pointer_t<decltype(C(std::declval<Member>()))>;
 };
 template <typename Member>
 using MemberClass_t = typename MemberClass<Member>::type;
