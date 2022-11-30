@@ -42,4 +42,15 @@ template <typename Type, auto = TypeName<Type>().find_first_of('.')>
 #endif
 
 }  // namespace internal
+template <typename Type, typename = void>
+struct TypeName final {
+  [[nodiscard]] static constexpr std::string_view value() noexcept {
+    return internal::TypeName<Type>(0);
+  }
+
+  [[nodiscard]] constexpr operator std::string_view() const noexcept {
+    return value();
+  }
+};
+
 }  // namespace XEngine
