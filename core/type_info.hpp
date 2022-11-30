@@ -12,7 +12,7 @@
 #include "core/hash_traits.hpp"
 #include "core/type_name.hpp"
 namespace XEngine {
-
+using namespace std::literals;
 template <typename Type, typename = void>
 struct TypeHash final {
   [[nodiscard]] static constexpr IdType value() noexcept {
@@ -54,5 +54,68 @@ class MemberClass {
 };
 template <typename Member>
 using MemberClass_t = typename MemberClass<Member>::type;
+
+struct TypeInfo final {
+  template <typename Type>
+  constexpr TypeInfo(std::in_place_type_t<Type>) noexcept
+      : seq{TypeIndex<
+            std::remove_cv_t<std::remove_reference_t<Type>>>::value()},
+        identifier{
+            TypeHash<std::remove_cv_t<std::remove_reference_t<Type>>>::value()},
+        alias{TypeName<
+            std::remove_cv_t<std::remove_reference_t<Type>>>::value()} {}
+
+  [[nodiscard]] constexpr IdType index() const noexcept { return seq; }
+  [[nodiscard]] constexpr IdType hash() const noexcept { return identifier; }
+  [[nodiscard]] constexpr std::string_view name() const noexcept {
+    return alias;
+  }
+
+ private:
+  IdType seq;
+  IdType identifier;
+  std::string_view alias;
+};
+
+[[nodiscard]] inline constexpr bool operator==(const TypeInfo &lhs,
+                                               const TypeInfo &rhs) noexcept {
+  return lhs.hash() == rhs.hash();
+}
+[[nodiscard]] inline constexpr bool operator!=(const TypeInfo &lhs,
+                                               const TypeInfo &rhs) noexcept {
+  return !(lhs == rhs);
+}
+[[nodiscard]] constexpr bool operator<(const TypeInfo &lhs,
+                                       const TypeInfo &rhs) noexcept {
+  return lhs.index() < rhs.index();
+}
+[[nodiscard]] constexpr bool operator<=(const TypeInfo &lhs,
+                                        const TypeInfo &rhs) noexcept {
+  return !(rhs < lhs);
+}
+[[nodiscard]] constexpr bool operator>(const TypeInfo &lhs,
+                                       const TypeInfo &rhs) noexcept {
+  return rhs < lhs;
+}
+[[nodiscard]] constexpr bool operator>=(const TypeInfo &lhs,
+                                        const TypeInfo &rhs) noexcept {
+  return !(lhs < rhs);
+}
+
+template <typename Type>
+[[nodiscard]] const TypeInfo &TypeId() noexcept {
+  if constexpr (std::is_same_v<
+                    Type, std::remove_cv_t<std::remove_reference_t<Type>>>) {
+    static TypeInfo instance{std::in_place_type<Type>};
+    return instance;
+  } else {
+    return TypeId<std::remove_cv_t<std::remove_reference_t<Type>>>();
+  }
+}
+
+template <typename Type>
+[[nodiscard]] const TypeInfo &TypeId(Type &&) noexcept {
+  return TypeId<std::remove_cv_t<std::remove_reference_t<Type>>>();
+}
 
 }  // namespace XEngine
