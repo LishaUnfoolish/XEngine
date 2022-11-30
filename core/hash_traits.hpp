@@ -7,8 +7,8 @@
 #pragma once
 #include <typeindex>
 namespace XEngine {
-using TypeIndex = std::type_index;
 using IdType = std::hash<std::type_index>::result_type;
+
 /*
 prime_:
   32 bit  = 2^24 + 2^8 + 0x93;
@@ -80,6 +80,10 @@ class HashString : HashedTraits<DATA> {
   [[nodiscard]] constexpr operator XEngine::IdType() const noexcept {
     return HashedTraits<DATA>::hash_;
   }
+  [[nodiscard]] constexpr operator const DATA *() const noexcept {
+    return HashedTraits<DATA>::data_;
+  }
+
   static constexpr auto Helper = [](const DATA *str) -> HashedTraits<DATA> {
     XEngine::IdType length{0};
     HashedTraits<DATA> data{str, HashParameters<XEngine::IdType>::offset_};
@@ -91,6 +95,19 @@ class HashString : HashedTraits<DATA> {
     return data;
   };
 };
+template <typename Char>
+[[nodiscard]] constexpr bool operator==(const HashString<Char> &lhs,
+                                        const HashString<Char> &rhs) noexcept {
+  return lhs.operator XEngine::IdType() == rhs.operator XEngine::IdType();
+}
+template <typename Type, typename = void>
+struct TypeIndex final {
+  [[nodiscard]] static IdType value() noexcept {
+    static const IdType value = std::type_index(typeid(Type)).hash_code();
+    return value;
+  }
+  [[nodiscard]] constexpr operator IdType() const noexcept { return value(); }
+};
 
 }  // namespace XEngine
 
@@ -99,4 +116,5 @@ namespace std::literals {
     const char *str, const std::size_t) noexcept {
   return XEngine::HashString<char>{str};
 }
+
 }  // namespace std::literals
