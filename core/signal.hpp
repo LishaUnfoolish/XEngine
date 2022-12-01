@@ -1,7 +1,7 @@
 /***************************
 @Author: Xhosa-LEE
 @Contact: lixiaoxmm@163.com
-@Time: 2022/11/20
+@Time: 2022/11/22
 @Desc: 信号与槽接口
 ***************************/
 
@@ -65,8 +65,7 @@ class Slot<RT(Args...)> : public SlotBase<Args...> {
 
  private:
   template <typename Rt>
-  auto CallBack(Args... args) const ->
-      typename std::enable_if<!std::is_void<RT>::value, Rt>::type {
+  auto CallBack(Args... args) const -> Rt requires(!std::is_void<RT>::value) {
     if (SlotBase<Args...>::connected() && call_back_) {
       return call_back_(std::forward<Args>(args)...);
     }
@@ -74,8 +73,7 @@ class Slot<RT(Args...)> : public SlotBase<Args...> {
   }
 
   template <typename Rt>
-  auto CallBack(Args... args) const ->
-      typename std::enable_if<std::is_void<Rt>::value, Rt>::type {
+  auto CallBack(Args... args) const -> Rt requires(std::is_void<Rt>::value) {
     if (SlotBase<Args...>::connected() && call_back_) {
       return call_back_(std::forward<Args>(args)...);
     }
@@ -138,8 +136,7 @@ class Signal<RT(Args...)> {
 
  private:
   template <typename Rt>
-  auto CallBack(Args... args) ->
-      typename std::enable_if<!std::is_void<RT>::value, Rt>::type {
+  auto CallBack(Args... args) -> Rt requires(!std::is_void<RT>::value) {
     SlotList local;
     {
       std::lock_guard<std::mutex> lock(mutex_);
@@ -161,8 +158,7 @@ class Signal<RT(Args...)> {
   }
 
   template <typename Rt>
-  auto CallBack(Args... args) ->
-      typename std::enable_if<std::is_void<Rt>::value, Rt>::type {
+  auto CallBack(Args... args) -> Rt requires(std::is_void<Rt>::value) {
     SlotList local;
     {
       std::lock_guard<std::mutex> lock(mutex_);
@@ -283,8 +279,8 @@ class Dispatcher<EventType, RT(Args...)> {
 
  private:
   template <typename Rt>
-  auto CallBack(const EventType& event, Args... args) ->
-      typename std::enable_if<std::is_void<RT>::value, Rt>::type {
+  auto CallBack(const EventType& event, Args... args) -> Rt
+      requires(std::is_void<RT>::value) {
     std::shared_lock<std::shared_mutex> lock(rw_lock_);
     if (HasChannel(event)) {
       (*msg_listeners_[event])(std::forward<Args>(args)...);
@@ -292,8 +288,8 @@ class Dispatcher<EventType, RT(Args...)> {
   }
 
   template <typename Rt>
-  auto CallBack(const EventType& event, Args... args) ->
-      typename std::enable_if<!std::is_void<Rt>::value, Rt>::type {
+  auto CallBack(const EventType& event, Args... args) -> Rt
+      requires(!std::is_void<Rt>::value) {
     std::shared_lock<std::shared_mutex> lock(rw_lock_);
     if (HasChannel(event)) {
       return (*msg_listeners_[event])(std::forward<Args>(args)...);
