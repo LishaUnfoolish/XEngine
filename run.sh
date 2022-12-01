@@ -11,7 +11,7 @@ function _usage() {
     .${BOLD}/run.sh${NO_COLOR} [OPTION]"
   echo -e "\n${RED}Options${NO_COLOR}:
     ${BLUE}build_opt [module]${NO_COLOR}: run optimized build.
-    ${BLUE}run_benchmark_test${NO_COLOR}: run run_benchmark_test
+    ${BLUE}run_hpcs_benchmark${NO_COLOR}: run run_hpcs_benchmark
     ${BLUE}compile_commands${NO_COLOR}: run compile_commands
     "
 }
@@ -22,7 +22,7 @@ function build_opt() {
   xmake f --toolchain=clang -c && xmake
   compile_commands
 }
-function run_benchmark_test() {
+function run_hpcs_benchmark() {
   xmake run benchmark_test
 }
 
@@ -41,8 +41,8 @@ function main() {
   build_opt)
     build_opt "$@"
     ;;
-  run_benchmark_test)
-    run_benchmark_test "$@"
+  run_hpcs_benchmark)
+    run_hpcs_benchmark "$@"
     ;;
   compile_commands)
     compile_commands "$@"
