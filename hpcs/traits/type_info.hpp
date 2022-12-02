@@ -9,8 +9,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "core/hash_traits.hpp"
-#include "core/type_name.hpp"
+#include "traits/hash_traits.hpp"
+#include "traits/type_name.hpp"
 namespace XEngine {
 using namespace std::literals;
 template <typename Type, typename = void>

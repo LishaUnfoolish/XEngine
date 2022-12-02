@@ -1,11 +1,4 @@
 
-/***************************
-@Author: Xhosa-LEE
-@Contact: lixiaoxmm@163.com
-@Time: 2022/12/01
-@Desc: type list
-***************************/
-
 #pragma once
 #include <type_traits>
 namespace XEngine {
