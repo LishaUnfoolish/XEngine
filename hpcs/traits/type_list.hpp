@@ -1,4 +1,10 @@
 
+/***************************
+@Author: Xhosa-LEE
+@Contact: lixiaoxmm@163.com
+@Time: 2022/12/05
+@Desc: type list模板接口
+***************************/
 #pragma once
 #include <type_traits>
 namespace XEngine {
@@ -85,24 +91,24 @@ template <typename... List>
 using TypeListCat_t = typename TypeListCat<List...>::type;
 
 template <typename...>
-struct type_list_unique;
+struct TypeListUnique;
 
 template <>
-struct type_list_unique<TypeList<>> {
+struct TypeListUnique<TypeList<>> {
   using type = TypeList<>;
 };
 template <typename Type, typename... Other>
 requires(requires {
   typename TypeList<Type, Other...>::type;
-}) struct type_list_unique<TypeList<Type, Other...>> {
+}) struct TypeListUnique<TypeList<Type, Other...>> {
   using type = std::conditional_t<
       (std::is_same_v<Type, Other> || ...),
-      typename type_list_unique<TypeList<Other...>>::type,
+      typename TypeListUnique<TypeList<Other...>>::type,
       TypeListCat_t<TypeList<Type>,
-                    typename type_list_unique<TypeList<Other...>>::type>>;
+                    typename TypeListUnique<TypeList<Other...>>::type>>;
 };
 template <typename Type>
-using TypeListUnique_t = typename type_list_unique<Type>::type;
+using TypeListUnique_t = typename TypeListUnique<Type>::type;
 
 template <typename List, typename Type>
 struct TypeListContains;
