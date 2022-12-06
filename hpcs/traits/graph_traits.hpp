@@ -12,6 +12,8 @@ template <class GRAPH_TYPE>
 struct GraphTraits {
   using NodeRef = typename GraphType::UnknownGraphTypeError;
   using GraphType = GRAPH_TYPE;
+  using EdgeType = typename GraphType::EdgeType;
+  using VertexType = typename GraphType::VertexType;
 };
 
 template <class GRAPH_TYPE>
