@@ -8,53 +8,54 @@
 
 #include "traits/iterator_range.hpp"
 namespace XEngine {
-template <class GraphType>
+template <class GRAPH_TYPE>
 struct GraphTraits {
   using NodeRef = typename GraphType::UnknownGraphTypeError;
+  using GraphType = GRAPH_TYPE;
 };
 
-template <class GraphType>
+template <class GRAPH_TYPE>
 struct Inverse {
-  const GraphType &Graph;
+  const GRAPH_TYPE &Graph;
 
-  inline Inverse(const GraphType &G) : Graph(G) {}
+  inline Inverse(const GRAPH_TYPE &G) : Graph(G) {}
 };
 
 template <class T>
 struct GraphTraits<Inverse<Inverse<T>>> : GraphTraits<T> {};
 
-template <class GraphType>
-IteratorRange<typename GraphTraits<GraphType>::nodes_iterator> Nodes(
-    const GraphType &G) {
-  return MakeRange(GraphTraits<GraphType>::NodesBegin(G),
-                   GraphTraits<GraphType>::NodesEnd(G));
+template <class GRAPH_TYPE>
+IteratorRange<typename GraphTraits<GRAPH_TYPE>::nodes_iterator> Nodes(
+    const GRAPH_TYPE &G) {
+  return MakeRange(GraphTraits<GRAPH_TYPE>::NodesBegin(G),
+                   GraphTraits<GRAPH_TYPE>::NodesEnd(G));
 }
-template <class GraphType>
-IteratorRange<typename GraphTraits<Inverse<GraphType>>::nodes_iterator>
-InverseNodes(const GraphType &G) {
-  return MakeRange(GraphTraits<Inverse<GraphType>>::NodesBegin(G),
-                   GraphTraits<Inverse<GraphType>>::NodesEnd(G));
-}
-
-template <class GraphType>
-IteratorRange<typename GraphTraits<GraphType>::ChildIteratorType> Children(
-    const typename GraphTraits<GraphType>::NodeRef &G) {
-  return MakeRange(GraphTraits<GraphType>::ChildBegin(G),
-                   GraphTraits<GraphType>::ChildEnd(G));
+template <class GRAPH_TYPE>
+IteratorRange<typename GraphTraits<Inverse<GRAPH_TYPE>>::nodes_iterator>
+InverseNodes(const GRAPH_TYPE &G) {
+  return MakeRange(GraphTraits<Inverse<GRAPH_TYPE>>::NodesBegin(G),
+                   GraphTraits<Inverse<GRAPH_TYPE>>::NodesEnd(G));
 }
 
-template <class GraphType>
-IteratorRange<typename GraphTraits<Inverse<GraphType>>::ChildIteratorType>
-InverseChildren(const typename GraphTraits<GraphType>::NodeRef &G) {
-  return MakeRange(GraphTraits<Inverse<GraphType>>::ChildBegin(G),
-                   GraphTraits<Inverse<GraphType>>::ChildEnd(G));
+template <class GRAPH_TYPE>
+IteratorRange<typename GraphTraits<GRAPH_TYPE>::ChildIteratorType> Children(
+    const typename GraphTraits<GRAPH_TYPE>::NodeRef &G) {
+  return MakeRange(GraphTraits<GRAPH_TYPE>::ChildBegin(G),
+                   GraphTraits<GRAPH_TYPE>::ChildEnd(G));
 }
 
-template <class GraphType>
-IteratorRange<typename GraphTraits<GraphType>::ChildEdgeIteratorType>
-ChildrenEdges(const typename GraphTraits<GraphType>::NodeRef &G) {
-  return MakeRange(GraphTraits<GraphType>::ChildEdgeBegin(G),
-                   GraphTraits<GraphType>::ChildEdgeEnd(G));
+template <class GRAPH_TYPE>
+IteratorRange<typename GraphTraits<Inverse<GRAPH_TYPE>>::ChildIteratorType>
+InverseChildren(const typename GraphTraits<GRAPH_TYPE>::NodeRef &G) {
+  return MakeRange(GraphTraits<Inverse<GRAPH_TYPE>>::ChildBegin(G),
+                   GraphTraits<Inverse<GRAPH_TYPE>>::ChildEnd(G));
+}
+
+template <class GRAPH_TYPE>
+IteratorRange<typename GraphTraits<GRAPH_TYPE>::ChildEdgeIteratorType>
+ChildrenEdges(const typename GraphTraits<GRAPH_TYPE>::NodeRef &G) {
+  return MakeRange(GraphTraits<GRAPH_TYPE>::ChildEdgeBegin(G),
+                   GraphTraits<GRAPH_TYPE>::ChildEdgeEnd(G));
 }
 
 }  // namespace XEngine
