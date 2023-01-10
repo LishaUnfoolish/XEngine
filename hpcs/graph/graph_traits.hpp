@@ -1,7 +1,7 @@
 /***************************
 @Author: Xhosa-LEE
 @Contact: lixiaoxmm@163.com
-@Time: 2022/12/05
+@Time: 2023/01/10
 @Desc: graph模板接口
 ***************************/
 #pragma once
@@ -15,7 +15,7 @@ struct GraphTraits {
   using EdgeType = typename T::EdgeType;
   using VertexType = typename T::VertexType;
   using EdgeRange = decltype(std::declval<T>().Outedges(0));
-  using EdgeIterator = typename std::decay_t<EdgeRange>::iterator;
+  using EdgeIterator = typename std::decay_t<EdgeRange>::Iterator;
 };
 
 template <class T>

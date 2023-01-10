@@ -1,8 +1,8 @@
 /***************************
 @Author: Xhosa-LEE
 @Contact: lixiaoxmm@163.com
-@Time: 2022/12/05
-@Desc: iterator range模板接口
+@Time: 2023/01/10
+@Desc: 迭代器接口
 ***************************/
 #pragma once
 #include <algorithm>
@@ -10,21 +10,22 @@ namespace XEngine {
 template <typename T>
 class IteratorRange {
  public:
-  using iterator = T;
-  using const_iterator = std::add_const_t<iterator>;
+  using Iterator = T;
+  using ConstIterator = std::add_const_t<Iterator>;
 
-  constexpr IteratorRange(const iterator& first, const iterator& last) noexcept(
-      std::is_nothrow_default_constructible_v<iterator>)
+  constexpr IteratorRange(const Iterator& first, const Iterator& last) noexcept(
+      std::is_nothrow_default_constructible_v<Iterator>)
       : first_(first), last_(last) {}
-  constexpr IteratorRange(const iterator& first, std::uint32_t count) noexcept(
-      std::is_nothrow_default_constructible_v<iterator>)
+  constexpr IteratorRange(const Iterator& first, std::uint32_t count) noexcept(
+      std::is_nothrow_default_constructible_v<Iterator>)
       : first_(first), last_(std::next(first, count)) {}
   IteratorRange() = default;
   IteratorRange(IteratorRange&&) = default;
 
-  [[nodiscard]] constexpr void Reset(const iterator& first,
-                                     const iterator& last) noexcept {
-    first_ = first, last_ = last;
+  [[nodiscard]] constexpr void Reset(const Iterator& first,
+                                     const Iterator& last) noexcept {
+    first_ = first;
+    last_ = last;
   }
   [[nodiscard]] constexpr bool operator==(
       const IteratorRange& rhs) const noexcept {
@@ -35,17 +36,17 @@ class IteratorRange {
     return first_ != rhs.first_ || last_ != rhs.last_;
   }
 
-  // 作为容器使用
-  [[nodiscard]] constexpr iterator begin() noexcept { return first_; }
-  [[nodiscard]] constexpr iterator end() noexcept { return last_; }
-  [[nodiscard]] constexpr const_iterator begin() const noexcept {
+  // iterator range
+  [[nodiscard]] constexpr Iterator begin() noexcept { return first_; }
+  [[nodiscard]] constexpr Iterator end() noexcept { return last_; }
+  [[nodiscard]] constexpr ConstIterator begin() const noexcept {
     return first_;
   }
-  [[nodiscard]] constexpr const_iterator end() const noexcept { return last_; }
+  [[nodiscard]] constexpr ConstIterator end() const noexcept { return last_; }
   [[nodiscard]] constexpr auto Size() const noexcept {
     return std::distance(first_, last_);
   }
-  [[nodiscard]] constexpr iterator& operator++() { return ++first_; }
+  [[nodiscard]] constexpr Iterator& operator++() { return ++first_; }
   [[nodiscard]] constexpr void Advance(std::uint32_t n) {
     std::advance(first_, n);
   }
@@ -54,8 +55,8 @@ class IteratorRange {
   [[nodiscard]] constexpr bool Empty() const { return first_ == last_; }
 
  private:
-  iterator first_{};
-  iterator last_{};
+  Iterator first_{};
+  Iterator last_{};
 };
 
 template <class T>
