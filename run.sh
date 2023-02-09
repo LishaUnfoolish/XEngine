@@ -13,6 +13,7 @@ function _usage() {
     ${BLUE}build_opt [module]${NO_COLOR}: run optimized build.
     ${BLUE}hpcs_benchmark${NO_COLOR}: run hpcs_benchmark
     ${BLUE}compile_commands${NO_COLOR}: run compile_commands
+    ${BLUE}run_unit_test${NO_COLOR}: run unit_test
     "
 }
 
@@ -28,6 +29,13 @@ function hpcs_benchmark() {
 
 function compile_commands() {
   xmake project -k compile_commands
+}
+function unit_test() {
+  target=("hpcs_benchmark" "test_flow_builder" "test_graph" "test_runner")
+  for i in ${target[@]}
+  do
+      xmake run $i
+  done
 }
 
 function main() {
@@ -46,6 +54,9 @@ function main() {
     ;;
   compile_commands)
     compile_commands "$@"
+    ;;
+  run_unit_test)
+    unit_test "$@"
     ;;
   *)
     _usage

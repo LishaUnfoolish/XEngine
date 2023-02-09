@@ -62,11 +62,11 @@ class Runner {
   constexpr Runner(BuilderType& builder) noexcept(
       std::is_nothrow_default_constructible_v<Builder>)
       : builder_(builder) {
-    Init();
+    Rebuild();
   }
   [[nodiscard]] constexpr ~Runner() noexcept { is_running.clear(); }
 
-  [[nodiscard]] constexpr bool Init() noexcept {
+  [[nodiscard]] constexpr bool Rebuild() noexcept {
     const auto& vec = builder_.Linearize();
     [[unlikely]] if (!vec.has_value()) { return false; }
     finished.clear();
