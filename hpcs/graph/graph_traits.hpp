@@ -13,15 +13,25 @@ template <typename T>
 struct GraphTraits {
   using GraphType = T;
   using EdgeType = typename T::EdgeType;
-  using VertexType = typename T::VertexType;
-  using EdgeRange = decltype(std::declval<T>().Outedges(0));
+  using NodeType = typename T::NodeType;
+  using EdgeRange = decltype(std::declval<T>().OutEdges(0));
   using EdgeIterator = typename std::decay_t<EdgeRange>::Iterator;
+};
+template <typename Type>
+struct EdgeTraits {
+  using EdgeType = Type;
+  static constexpr const EdgeType placeholders = {};
+};
+
+template <typename Type>
+struct NodeTraits {
+  using NodeType = Type;
 };
 
 template <class T>
 struct Inverse {
-  const T &graph_;
-  inline Inverse(const T &graph) : graph_(graph) {}
+  const T& graph_;
+  inline Inverse(const T& graph) : graph_(graph) {}
 };
 
 template <class T>
@@ -60,5 +70,6 @@ struct GraphTraits<Inverse<Inverse<T>>> : GraphTraits<T> {};
 //   return MakeRange(GraphTraits<GraphType>::ChildEdgeBegin(G),
 //                    GraphTraits<GraphType>::ChildEdgeEnd(G));
 // }
+//
 
 }  // namespace XEngine

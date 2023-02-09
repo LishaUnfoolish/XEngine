@@ -1,0 +1,16 @@
+---
+BasedOnStyle: Google
+---
+Language:                               Cpp
+Cpp11BracedListStyle:                   true
+Standard:                               Cpp11
+# Clang-format version 14.0 
+# Mimic cpplint style
+IncludeCategories:
+  # Note that the "main" header is priority 0
+  # The priority is assigned to first match in the ordered list
+  # Miscelaneous system libraries
+CommentPragmas: '^ NOLINT'
+DerivePointerAlignment: false
+AllowShortBlocksOnASingleLine: Empty
+---

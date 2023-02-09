@@ -2,22 +2,27 @@
 @Author: Xhosa-LEE
 @Contact: lixiaoxmm@163.com
 @Time: 2023/01/10
-@Desc: 迭代器接口
+@Desc: IteratorRange
 ***************************/
 #pragma once
 #include <algorithm>
 namespace XEngine {
+// https://en.cppreference.com/w/cpp/iterator/iterator
 template <typename T>
 class IteratorRange {
  public:
   using Iterator = T;
   using ConstIterator = std::add_const_t<Iterator>;
-
+  using ValueType = typename std::iterator_traits<Iterator>::value_type;
+  using DifferenceType =
+      typename std::iterator_traits<Iterator>::difference_type;
   constexpr IteratorRange(const Iterator& first, const Iterator& last) noexcept(
       std::is_nothrow_default_constructible_v<Iterator>)
       : first_(first), last_(last) {}
-  constexpr IteratorRange(const Iterator& first, std::uint32_t count) noexcept(
-      std::is_nothrow_default_constructible_v<Iterator>)
+  constexpr IteratorRange(
+      const Iterator& first,
+      const DifferenceType&
+          count) noexcept(std::is_nothrow_default_constructible_v<Iterator>)
       : first_(first), last_(std::next(first, count)) {}
   IteratorRange() = default;
   IteratorRange(IteratorRange&&) = default;
@@ -47,20 +52,24 @@ class IteratorRange {
     return std::distance(first_, last_);
   }
   [[nodiscard]] constexpr Iterator& operator++() { return ++first_; }
-  [[nodiscard]] constexpr void Advance(std::uint32_t n) {
-    std::advance(first_, n);
+  [[nodiscard]] constexpr void Advance(const DifferenceType& distance) {
+    std::advance(first_, distance);
   }
   [[nodiscard]] constexpr decltype(auto) operator*() { return *first_; }
   [[nodiscard]] constexpr decltype(auto) operator*() const { return *first_; }
   [[nodiscard]] constexpr bool Empty() const { return first_ == last_; }
+  [[nodiscard]] constexpr auto Count(const DifferenceType& value) const {
+    return std::count(first_, last_, value);
+  }
 
  private:
   Iterator first_{};
   Iterator last_{};
 };
 
-template <class T>
-IteratorRange<T> MakeRange(T x, std::uint32_t count) {
+template <class T,
+          typename DFT = typename std::iterator_traits<T>::difference_type>
+IteratorRange<T> MakeRange(T x, DFT count) {
   return IteratorRange<T>(std::move(x), count);
 }
 
