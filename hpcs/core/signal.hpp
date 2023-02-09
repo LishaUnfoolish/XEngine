@@ -37,9 +37,7 @@ class SlotBase {
   virtual ~SlotBase() {}
 
   void operator()(Args... args) {
-    if (connected_ && cb_) {
-      cb_(std::forward<Args>(args)...);
-    }
+    if (connected_ && cb_) { cb_(std::forward<Args>(args)...); }
   }
 
   void Disconnect() { connected_ = false; }
@@ -120,17 +118,13 @@ class Signal<RT(Args...)> {
       }
     }
 
-    if (find) {
-      ClearDisconnectedSlots();
-    }
+    if (find) { ClearDisconnectedSlots(); }
     return find;
   }
 
   void DisconnectAllSlots() {
     std::lock_guard<std::mutex> lock(mutex_);
-    for (auto& slot : slots_) {
-      slot->Disconnect();
-    }
+    for (auto& slot : slots_) { slot->Disconnect(); }
     slots_.clear();
   }
 
@@ -140,17 +134,13 @@ class Signal<RT(Args...)> {
     SlotList local;
     {
       std::lock_guard<std::mutex> lock(mutex_);
-      for (auto& slot : slots_) {
-        local.emplace_back(slot);
-      }
+      for (auto& slot : slots_) { local.emplace_back(slot); }
     }
     Rt ret{};
     if (!local.empty()) {
       for (auto& slot : local) {
         ret = (*slot)(std::forward<Args>(args)...);
-        if (!ret) {
-          return ret;
-        }
+        if (!ret) { return ret; }
       }
     }
     ClearDisconnectedSlots();
@@ -162,15 +152,11 @@ class Signal<RT(Args...)> {
     SlotList local;
     {
       std::lock_guard<std::mutex> lock(mutex_);
-      for (auto& slot : slots_) {
-        local.emplace_back(slot);
-      }
+      for (auto& slot : slots_) { local.emplace_back(slot); }
     }
 
     if (!local.empty()) {
-      for (auto& slot : local) {
-        (*slot)(std::forward<Args>(args)...);
-      }
+      for (auto& slot : local) { (*slot)(std::forward<Args>(args)...); }
     }
 
     ClearDisconnectedSlots();
@@ -219,16 +205,12 @@ class Connection<RT(Args...)> {
   }
 
   bool IsConnected() const {
-    if (slot_) {
-      return slot_->connected();
-    }
+    if (slot_) { return slot_->connected(); }
     return false;
   }
 
   bool Disconnect() {
-    if (signal_ && slot_) {
-      return signal_->Disconnect(*this);
-    }
+    if (signal_ && slot_) { return signal_->Disconnect(*this); }
     return false;
   }
 
@@ -263,17 +245,13 @@ class Dispatcher<EventType, RT(Args...)> {
 
   bool RemoveListener(const EventType& event) {
     std::lock_guard<Mutex> lockGuard(rw_lock_);
-    if (HasChannel(event)) {
-      msg_listeners_.erase(event);
-    }
+    if (HasChannel(event)) { msg_listeners_.erase(event); }
     return true;
   }
 
   bool HasChannel(const EventType& event) {
     auto listener = msg_listeners_.find(event);
-    if (listener != msg_listeners_.end()) {
-      return true;
-    }
+    if (listener != msg_listeners_.end()) { return true; }
     return false;
   }
 

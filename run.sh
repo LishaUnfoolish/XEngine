@@ -31,7 +31,13 @@ function compile_commands() {
   xmake project -k compile_commands
 }
 function unit_test() {
-  target=("hpcs_benchmark" "test_flow_builder" "test_graph" "test_runner")
+  target=(
+    "hpcs_benchmark"
+    "test_flow_builder"
+    "test_graph"
+    "test_runner"
+    "test_signal"
+  )
   for i in ${target[@]}
   do
       xmake run $i

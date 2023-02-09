@@ -1,10 +1,9 @@
 /***************************
 @Author: Xhosa-LEE
 @Contact: lixiaoxmm@163.com
-@Time: 2022/11/20
-@Desc: 信号与槽接口的测试用例
+@Time: 2023/02/10
 ***************************/
-
+#define CATCH_CONFIG_MAIN
 #include <iostream>
 #include <memory>
 #include <utility>
