@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "catch.hpp"
+#include "common/catch.hpp"
 #include "core/signal.hpp"
 class MyInt {
  public:

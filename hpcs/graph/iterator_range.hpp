@@ -58,7 +58,7 @@ class IteratorRange {
   [[nodiscard]] constexpr decltype(auto) operator*() { return *first_; }
   [[nodiscard]] constexpr decltype(auto) operator*() const { return *first_; }
   [[nodiscard]] constexpr bool Empty() const { return first_ == last_; }
-  [[nodiscard]] constexpr auto Count(const DifferenceType& value) const {
+  [[nodiscard]] constexpr auto Count(const ValueType& value) const {
     return std::count(first_, last_, value);
   }
 

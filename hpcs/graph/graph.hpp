@@ -25,7 +25,7 @@ class Graph : public Impl {
     return static_cast<std::uint32_t>(
         std::count_if(outedge_iterator.begin(), outedge_iterator.end(),
                       [](const EdgeType& edge) -> bool {
-                        return Impl::placeholders != edge;
+                        return EdgeTraits<EdgeType>::placeholders != edge;
                       }));
   }
 
