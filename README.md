@@ -3,7 +3,7 @@
 
 
 ###注意:
-  本项目提供一个docker环境,方便测试使用,也能直接在Ubuntu上运行,但需要安装xmake和clang15+
+  本项目提供一个docker环境方便测试使用,也能直接在Ubuntu上运行,但需要安装xmake和clang15+
   
 ###build:
 1.  ./docker/scripts/dev_start.sh start   #启动和拉取docker镜像
