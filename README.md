@@ -1,4 +1,4 @@
-#### XEngine 中文|[英文](https://github.com/LishaUnfoolish/XEngine/blob/master/README_en.md)
+#### XEngine [中文](https://github.com/LishaUnfoolish/XEngine/blob/master/README.md)|[英文](https://github.com/LishaUnfoolish/XEngine/blob/master/README_en.md)
 ###一个通用的框架，封控在家做来玩的玩具。
 
 

@@ -1,4 +1,4 @@
-#### XEngine
+#### XEngine [Chinese](https://github.com/LishaUnfoolish/XEngine/blob/master/README.md)|[English](https://github.com/LishaUnfoolish/XEngine/blob/master/README_en.md)
 ###XEngine is a general framework designed to be used as a toy at home. 
 
 
