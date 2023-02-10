@@ -16,11 +16,11 @@
 #如果需要自己制作docker镜像可以使用[docker镜像制作工具](https://github.com/LishaUnfoolish/XEngine_docker_tools)制作自己的docker,然后将./docker/scripts/dev_start.sh脚本中的DEV="lixiaoxmm/xengine:v1.3.xmake_1668767811"修改为自己的源
 
 
-###release note:
+###release note:<br>
 1.graph框架,做的比较灵活,现在采用邻接矩阵来存储每个节点的信息,后续有时间会增加邻接表和链式前向星作为可选
-模板还有可以实现各种图算法,有兴趣的同学也可以pr.(https://github.com/LishaUnfoolish/XEngine/tree/master/hpcs/graph)
-2.flow builder模块可配合graph做各种任务构建workflow。(https://github.com/LishaUnfoolish/XEngine/blob/master/hpcs/task/flow_builder.hpp)
-3.runner模块负责执行builder构建的workflow,现阶段通过feature做一步,后续会在task目录增加协程调度.(https://github.com/LishaUnfoolish/XEngine/blob/master/hpcs/task/runner.hpp)
+模板还有可以实现各种图算法,有兴趣的同学也可以pr.(https://github.com/LishaUnfoolish/XEngine/tree/master/hpcs/graph)<br>
+2.flow builder模块可配合graph做各种任务构建workflow。(https://github.com/LishaUnfoolish/XEngine/blob/master/hpcs/task/flow_builder.hpp)<br>
+3.runner模块负责执行builder构建的workflow,现阶段通过feature做一步,后续会在task目录增加协程调度.(https://github.com/LishaUnfoolish/XEngine/blob/master/hpcs/task/runner.hpp)<br>
 
 
 
