@@ -19,6 +19,29 @@
 #include "graph/breadth_first_iterator.hpp"
 #include "task/flow_builder.hpp"
 #include "task/task.hpp"
+
+/*
+This code implements a class Runner which takes in a flow builder and runs the
+tasks defined in the builder.
+
+The class uses the linearized order of tasks from the builder to determine the
+order in which tasks should be run.
+
+The class uses a multithreaded approach,where each task is run in a separate
+thread and their results are stored in a std::future object.
+
+The Run function of the Runner class returns a RunnerStatus object that
+indicates the status of the run.
+If the run was successful, the RunnerStopReason member of the RunnerStatus
+object will be set to RunnerOk.
+If the run was not successful, the RunnerStopReason member will be set to
+RunnerTimeLimit, and the ErrorMessage member will contain an error message
+indicating the reason for the failure.
+
+The class also has a function Rebuild that can be used to rebuild the linearized
+order of tasks, which is necessary if the flow builder is changed.
+ */
+
 namespace XEngine {
 HAS_MEMBER_TRAITS(Run);
 HAS_MEMBER_RET_TRAITS(Run);
