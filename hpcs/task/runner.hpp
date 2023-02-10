@@ -96,9 +96,13 @@ class Runner {
       std::vector<std::future<Ret>> future_list{};
       while (is_running_.test()) {
         for (const auto& iter : vec.value()) {
-          /* 必须是没在跑并且没有运行过 */
+          /* 必须是没在跑并且没有运行过
+          Must not be running and must not have been running.*/
+
           [[likely]] if (!running_[iter] && !finished_[iter]) {
-            /* 如果入度>0,就查看依赖的节点有没有跑完 */
+            /* 如果入度>0,就查看依赖的节点有没有跑完
+            If the indegree > 0, then check to see if the dependent nodes have
+            been run. */
             std::uint32_t edge_count = builder_.WorkFlows().Indegree(iter);
             [[likely]] if (edge_count > 0) {
               for (const auto& [id, state] : finished_) {
