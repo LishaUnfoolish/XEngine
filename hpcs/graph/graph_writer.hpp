@@ -23,7 +23,7 @@ HAS_MEMBER_TRAITS(Name);
 template <typename T>
 inline constexpr bool CheckSmartPointerHasName = requires {
   requires CheckSmartPointer<T>;
-  requires HasMemberName<typename is_smart_pointer<T>::valueType>;
+  requires HasMemberName<typename IsSmartPointer<T>::valueType>;
 };
 template <typename T>
 inline constexpr bool CheckPointerHasName = requires {

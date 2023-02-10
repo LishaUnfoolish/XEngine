@@ -24,12 +24,12 @@ struct IsSmartPointerHelper<std::weak_ptr<T>> : public std::true_type {
   using valueType = T;
 };
 template <typename T>
-struct is_smart_pointer
+struct IsSmartPointer
     : public IsSmartPointerHelper<typename std::remove_cv<T>::type> {};
 
 template <typename T>
 inline constexpr bool CheckSmartPointer = requires {
-  requires is_smart_pointer<T>::value;
+  requires IsSmartPointer<T>::value;
 };
 
 }  // namespace XEngine

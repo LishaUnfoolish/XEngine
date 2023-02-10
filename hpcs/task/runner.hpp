@@ -64,18 +64,18 @@ class Runner {
       : builder_(builder) {
     Rebuild();
   }
-  [[nodiscard]] constexpr ~Runner() noexcept { is_running.clear(); }
+  [[nodiscard]] constexpr ~Runner() noexcept { is_running_.clear(); }
 
   [[nodiscard]] constexpr bool Rebuild() noexcept {
     const auto& vec = builder_.Linearize();
     [[unlikely]] if (!vec.has_value()) { return false; }
-    finished.clear();
-    running.clear();
+    finished_.clear();
+    running_.clear();
     for (const auto& id : vec.value()) {
-      finished.try_emplace(id, false);
-      running.try_emplace(id, false);
+      finished_.try_emplace(id, false);
+      running_.try_emplace(id, false);
     }
-    is_running.test_and_set();
+    is_running_.test_and_set();
     return true;
   }
   template <typename RetType = RunnerStatus>
@@ -94,14 +94,14 @@ class Runner {
     [[likely]] if (vec.has_value()) {
       auto finish_count = vec.value().size();
       std::vector<std::future<Ret>> future_list{};
-      while (is_running.test()) {
+      while (is_running_.test()) {
         for (const auto& iter : vec.value()) {
           /* 必须是没在跑并且没有运行过 */
-          [[likely]] if (!running[iter] && !finished[iter]) {
+          [[likely]] if (!running_[iter] && !finished_[iter]) {
             /* 如果入度>0,就查看依赖的节点有没有跑完 */
             std::uint32_t edge_count = builder_.WorkFlows().Indegree(iter);
             [[likely]] if (edge_count > 0) {
-              for (const auto& [id, state] : finished) {
+              for (const auto& [id, state] : finished_) {
                 [[likely]] if (state &&
                                builder_.WorkFlows().HasEdge(id, iter)) {
                   --edge_count;
@@ -109,7 +109,7 @@ class Runner {
               }
             }
             [[likely]] if (edge_count == 0) {
-              running[iter] = true;
+              running_[iter] = true;
               future_list.emplace_back(
                   std::move(Async([node = &builder_.WorkFlows().GetNode(iter),
                                    iter]() -> decltype(auto) {
@@ -138,7 +138,7 @@ class Runner {
                 ERROR << "Failed runner by:" << status.Id();
                 return status.RetValue();
               }
-              finished[status.Id()] = true;
+              finished_[status.Id()] = true;
               --finish_count;
               [[unlikely]] if (finish_count <= 0) { return status.RetValue(); }
             }
@@ -174,12 +174,12 @@ class Runner {
   }
 
  protected:
-  std::atomic_flag is_running{};
+  std::atomic_flag is_running_{};
   BuilderType& builder_{};
   std::optional<std::chrono::milliseconds> time_limit_;
   std::chrono::time_point<std::chrono::steady_clock> start_time_;
-  std::unordered_map<NodeIdType, bool> finished{};
-  std::unordered_map<NodeIdType, bool> running{};
+  std::unordered_map<NodeIdType, bool> finished_{};
+  std::unordered_map<NodeIdType, bool> running_{};
 };
 
 }  // namespace XEngine
