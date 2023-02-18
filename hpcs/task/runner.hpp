@@ -21,26 +21,28 @@
 #include "task/task.hpp"
 
 /*
-This code implements a class Runner which takes in a flow builder and runs the
-tasks defined in the builder.
+The Runner class is a template class that is designed to execute a set of tasks
+in parallel. The template parameter Builder is the type of the object that
+builds the directed acyclic graph (DAG) representing the dependencies between
+tasks.
 
-The class uses the linearized order of tasks from the builder to determine the
-order in which tasks should be run.
+The Runner class has a private member variable builder_ of type BuilderType,
+which is a reference to the object that builds the DAG. The class also has three
+private member variables: finished_, running_, and is_running_. finished_ is an
+std::unordered_map that keeps track of whether a task has been executed.
+running_ is also an std::unordered_map that keeps track of whether a task is
+currently being executed. is_running_ is an std::atomic_flag that is used to
+stop the execution of the tasks.
 
-The class uses a multithreaded approach,where each task is run in a separate
-thread and their results are stored in a std::future object.
-
-The Run function of the Runner class returns a RunnerStatus object that
-indicates the status of the run.
-If the run was successful, the RunnerStopReason member of the RunnerStatus
-object will be set to RunnerOk.
-If the run was not successful, the RunnerStopReason member will be set to
-RunnerTimeLimit, and the ErrorMessage member will contain an error message
-indicating the reason for the failure.
-
-The class also has a function Rebuild that can be used to rebuild the linearized
-order of tasks, which is necessary if the flow builder is changed.
- */
+The Runner class has several public member functions. The Stop function sets the
+is_running_ flag to false, which stops the execution of the tasks. The Rebuild
+function rebuilds the DAG based on the current state of the builder object. The
+Run function executes the tasks in parallel. The Run function takes a variable
+number of arguments that are passed to the Run method of each task. The Run
+function returns an std::optional that contains a RunnerStatus object that
+describes the reason for stopping the execution of the tasks. If the execution
+is stopped because of an error, the RunnerStatus object also contains an error
+message. */
 
 namespace XEngine {
 HAS_MEMBER_TRAITS(Run);
