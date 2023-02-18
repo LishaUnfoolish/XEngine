@@ -4,15 +4,25 @@
 @Time: 2023/02/29
 ***************************/
 #pragma once
+#include <functional>
 #include <type_traits>
 #include <vector>
 
 #include "common/macros.hpp"
+#include "core/signal.hpp"
 namespace XEngine {
 template <typename Matrix, typename Node>
 class AdjacencyMatrix {
-  using NodeContainer = std::conditional_t<std::is_void_v<Node>,
-                                           std::false_type, std::vector<Node>>;
+  using NodeContainer = std::conditional_t<
+      std::is_void_v<Node>, std::false_type,
+      std::conditional_t<std::is_function_v<Node>,
+                         std::vector<std::function<Node>>, std::vector<Node>>>;
+
+  // using NodeContainer = std::conditional_t<
+  //     std::is_void_v<Node>, std::false_type,
+  //     std::conditional_t<std::is_function_v<Node>,
+  //                        std::vector<Dispatcher<NodeId, Node>>,
+  //                        std::vector<Node>>>;
 
  public:
   using NodeType = Node;

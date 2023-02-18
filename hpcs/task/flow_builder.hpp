@@ -4,15 +4,13 @@
 @Time: 2023/02/29
 ***************************/
 #pragma once
+#include <functional>
 #include <optional>
 #include <set>
 #include <type_traits>
 
 #include "graph/graph.hpp"
 #include "graph/topology_sort.hpp"
-struct Node {
-  using Condition = int;
-};
 
 namespace XEngine {
 template <typename Graph>
@@ -28,36 +26,64 @@ class FlowBuilder {
   // Function: Emplace
   template <typename... Args>
   [[nodiscard]] constexpr NodeIdType Emplace(const std::set<NodeIdType>& deps,
-                                             const Args&&... args) noexcept {
+                                             const Args&&... args) noexcept
+      requires(!std::is_function_v<NodeType>) {
     return Emplace({std::forward<Args>(args)...}, deps);
   }
 
   template <typename Node, typename... Args>
   [[nodiscard]] constexpr NodeIdType Emplace(const std::set<NodeIdType>& deps,
-                                             const Args&&... args) noexcept {
+                                             const Args&&... args) noexcept
+      requires(!std::is_function_v<NodeType>) {
     return Emplace({std::forward<Args>(args)...}, deps);
   }
 
   template <typename Node, typename... Args>
   [[nodiscard]] constexpr NodeIdType Emplace(const std::set<NodeIdType>& deps,
                                              const std::string& name = "",
-                                             const Args&&... args) noexcept {
+                                             const Args&&... args) noexcept
+      requires(!std::is_function_v<NodeType>) {
     return Emplace({name, std::forward<Args>(args)...}, deps);
   }
 
   template <typename... Args>
   [[nodiscard]] constexpr NodeIdType Emplace(const std::set<NodeIdType>& deps,
                                              const std::string& name = "",
-                                             const Args&&... args) noexcept {
+                                             const Args&&... args) noexcept
+      requires(!std::is_function_v<NodeType>) {
     return Emplace({name, std::forward<Args>(args)...}, deps);
   }
 
+  template <typename F, typename... Args>
+  [[nodiscard]] constexpr NodeIdType Emplace(const std::set<NodeIdType>& deps,
+                                             const std::string& name, F&& f,
+                                             Args&&... args) noexcept
+      requires(std::is_function_v<NodeType>) {
+    NodeIdType node_index = graph_.template AddNode<F, Args...>(
+        std::forward<F>(f), std::forward<Args>(args)...);
+    for (const auto& dep_index : deps) {
+      graph_.AddEdge(dep_index, node_index);
+    }
+    return node_index;
+  }
+
+  template <typename T>
+  [[nodiscard]] constexpr NodeIdType Emplace(const std::set<NodeIdType>& deps,
+                                             const std::string& name,
+                                             const T& lambda) noexcept
+      requires(std::is_function_v<NodeType>) {
+    NodeIdType node_index = graph_.AddNode(std::move(lambda));
+    for (const auto& dep_index : deps) {
+      graph_.AddEdge(dep_index, node_index);
+    }
+    return node_index;
+  }
+
+  [[nodiscard]] constexpr GraphType& WorkFlows() noexcept { return graph_; }
   [[nodiscard]] constexpr std::optional<std::vector<NodeIdType>>
   Linearize() noexcept {
     return TopologySort<GraphType>{graph_}();
   }
-
-  [[nodiscard]] constexpr GraphType& WorkFlows() noexcept { return graph_; }
 
  private:
   [[nodiscard]] constexpr NodeIdType Emplace(

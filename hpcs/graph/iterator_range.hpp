@@ -16,6 +16,7 @@ class IteratorRange {
   using ValueType = typename std::iterator_traits<Iterator>::value_type;
   using DifferenceType =
       typename std::iterator_traits<Iterator>::difference_type;
+
   constexpr IteratorRange(const Iterator& first, const Iterator& last) noexcept(
       std::is_nothrow_default_constructible_v<Iterator>)
       : first_(first), last_(last) {}

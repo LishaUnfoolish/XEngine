@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include <concepts>
+#include <functional>
 
 #include "graph/adjacency_matrix.hpp"
 #include "graph/graph_traits.hpp"
@@ -24,9 +25,41 @@ class DenseGraph : public AdjacencyMatrix<Matrix<Edge>, Node> {
       requires(!std::is_void_v<T> && std::is_convertible_v<T, NodeType>) {
     BaseT::adjacency_matrix_.AppendRow(EdgeTraits<Edge>::placeholders);
     BaseT::adjacency_matrix_.AppendCol(EdgeTraits<Edge>::placeholders);
-    BaseT::nodes.push_back(NodeType(node));
+    BaseT::nodes.emplace_back(std::move(node));
     return static_cast<NodeId>(BaseT::nodes.size() - 1);
   }
+
+  template <typename F, typename... Args>
+  [[nodiscard]] constexpr NodeId AddNode(F&& func, Args&&... args) noexcept
+      requires(std::is_function_v<NodeType>) {
+    BaseT::adjacency_matrix_.AppendRow(EdgeTraits<Edge>::placeholders);
+    BaseT::adjacency_matrix_.AppendCol(EdgeTraits<Edge>::placeholders);
+
+    // const NodeId& id = static_cast<NodeId>(BaseT::nodes.size());
+    // BaseT::nodes.emplace_back(std::move(Dispatcher<NodeId, Node>{})
+    //                               .AddListener(id, std::forward<F>(func),
+    //                                            std::forward<Args>(args)...));
+    // return id;
+
+    BaseT::nodes.emplace_back(
+        std::move(std::bind<std::invoke_result_t<F, Args...>>(
+            std::forward<F>(func), std::forward<Args>(args)...)));
+    return static_cast<NodeId>(BaseT::nodes.size() - 1);
+  }
+
+  template <typename T>
+  [[nodiscard]] constexpr NodeId AddNode(T&& lambda) noexcept
+      requires(std::is_function_v<NodeType>) {
+    return [this]<class R, class... Args>(std::function<R(Args...)> lambda)
+        ->NodeId {
+      BaseT::adjacency_matrix_.AppendRow(EdgeTraits<Edge>::placeholders);
+      BaseT::adjacency_matrix_.AppendCol(EdgeTraits<Edge>::placeholders);
+      BaseT::nodes.emplace_back(std::move(lambda));
+      return static_cast<NodeId>(BaseT::nodes.size() - 1);
+    }
+    (std::move(std::function{std::move(lambda)}));
+  }
+
   [[nodiscard]] constexpr EdgeIterator AddEdge(NodeId from, EdgeIterator pos,
                                                const Edge& edge) noexcept {
     if (!(from < BaseT::Order())) [[likely]] {
@@ -51,8 +84,8 @@ class DenseGraph : public AdjacencyMatrix<Matrix<Edge>, Node> {
           BaseT::Order()))
       [[likely]] { assert(false && "Has edges is already initialized."); }
 
-    BaseT::adjacency_matrix_.EraseRow(node),
-        BaseT::adjacency_matrix_.EraseCol(node);
+    BaseT::adjacency_matrix_.EraseRow(node);
+    BaseT::adjacency_matrix_.EraseCol(node);
     if constexpr (!std::is_void_v<NodeType>) {
       BaseT::nodes.erase(std::next(BaseT::nodes.begin(), node));
     }

@@ -34,6 +34,11 @@ class SlotBase {
       : cb_(another.cb_), connected_(another.connected_) {}
   explicit SlotBase(const Callback& cb, bool connected = true)
       : cb_(cb), connected_(connected) {}
+
+  SlotBase(SlotBase&& another)
+      : cb_(std::move(another.cb_)),
+        connected_(std::move(another.connected_)) {}
+
   virtual ~SlotBase() {}
 
   void operator()(Args... args) {
@@ -90,6 +95,9 @@ class Signal<RT(Args...)> {
  public:
   explicit Signal(const Callback& call_back) { Connect(call_back); }
   Signal() {}
+
+  Signal(Signal&& source) : slots_(std::move(source.slots_)) {}
+
   virtual ~Signal() { DisconnectAllSlots(); }
 
   RT operator()(Args... args) {
@@ -184,6 +192,10 @@ class Connection<RT(Args...)> {
   Connection() : slot_(nullptr), signal_(nullptr) {}
   Connection(const SlotPtr& slot, const SignalPtr& signal)
       : slot_(slot), signal_(signal) {}
+
+  Connection(Connection&& source)
+      : slot_(std::move(source.slot_)), signal_(std::move(source.signal_)) {}
+
   virtual ~Connection() {
     slot_ = nullptr;
     signal_ = nullptr;
@@ -227,7 +239,16 @@ class Dispatcher<EventType, RT(Args...)> {
   using Map = std::map<EventType, SignalPtr>;
 
  public:
-  bool AddListener(const EventType& event, const Callback& call_back) {
+  Dispatcher() = default;
+  Dispatcher(Dispatcher&& source)
+      : msg_listeners_(std::move(source.msg_listeners_)) {}
+  Dispatcher<EventType, RT(Args...)>& operator=(
+      const Dispatcher<EventType, RT(Args...)>& source) {
+    msg_listeners_ = source.msg_listeners_;
+    return *this;
+  }
+
+  void AddListener(const EventType& event, const Callback& call_back) & {
     std::lock_guard<Mutex> lockGuard(rw_lock_);
     if (!HasChannel(event)) {
       SignalPtr signal_ptr = std::make_shared<Signal<RT(Args...)>>(call_back);
@@ -235,8 +256,10 @@ class Dispatcher<EventType, RT(Args...)> {
     } else {
       msg_listeners_[event]->Connect(call_back);
     }
-
-    return true;
+  }
+  auto AddListener(const EventType& event, const Callback& call_back) && {
+    AddListener(event, call_back);
+    return std::move(*this);
   }
 
   RT Dispatch(const EventType& event, Args... args) {
