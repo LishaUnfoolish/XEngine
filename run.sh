@@ -20,7 +20,7 @@ function _usage() {
 function build_opt() {
   # build all release
   #  --toolchain used clang++13
-  xmake f --toolchain=clang -c && xmake
+  xmake f --toolchain=clang -c && xmake -v -w
   compile_commands
 }
 function hpcs_benchmark() {
@@ -38,9 +38,8 @@ function unit_test() {
     "test_runner"
     "test_signal"
   )
-  for i in ${target[@]}
-  do
-      xmake run $i
+  for i in ${target[@]}; do
+    xmake run $i
   done
 }
 

@@ -64,6 +64,7 @@ TEST_CASE("test_runner") {
   REQUIRE(test_num == 0);
   XEngine::Runner runner{builder};
   // graph.Graphviz();
+  runner.Rebuild();
   runner.Run<XEngine::RunnerStatus>();
   REQUIRE(test_num == 10);
 
@@ -74,6 +75,7 @@ TEST_CASE("test_runner") {
 
   test_num = 0;
   // graph.Graphviz();
+  runner.Rebuild();
   runner.Run<XEngine::RunnerStatus>();
   REQUIRE(test_num == 9);
 }
@@ -122,6 +124,7 @@ TEST_CASE("test_function_runner") {
   REQUIRE(test_num == 0);
   XEngine::Runner runner{builder};
   // graph.Graphviz();
+  runner.Rebuild();
   runner.Run<XEngine::RunnerStatus>();
   REQUIRE(test_num == 10);
 
@@ -132,6 +135,7 @@ TEST_CASE("test_function_runner") {
 
   test_num = 0;
   // graph.Graphviz();
+  runner.Rebuild();
   runner.Run<XEngine::RunnerStatus>();
   REQUIRE(test_num == 9);
 }
@@ -193,6 +197,7 @@ TEST_CASE("test_has_args_function_runner") {
   // graph.Graphviz();
   const int& a = 1;
   const int& b = 2;
+  runner.Rebuild();
   auto rrr = runner.Run(a, b);
   REQUIRE(test_num == 10);
   REQUIRE(sum == 3);
@@ -207,7 +212,44 @@ TEST_CASE("test_has_args_function_runner") {
   // // graph.Graphviz();
   const int& c = 3;
   const int& d = 4;
+  runner.Rebuild();
   runner.Run(c, d);
   REQUIRE(sum == 7);
   REQUIRE(test_num == 9);
+}
+
+TEST_CASE("test_has_args_function_runner_benchmark") {
+  XEngine::Graph<XEngine::DenseGraph<int, XEngine::RunnerStatus()>> graph{};
+  XEngine::FlowBuilder builder{graph};
+
+  int count1 = 100;
+  for (int i = count1; i > 0; i--) {
+    std::set<XEngine::NodeId> dep;
+    for (int k = 0; k < count1 - i; k++) { dep.insert(k); }
+
+    auto ret = builder.Emplace(dep, "测试node10", []() {
+      ++test_num;
+      return XEngine::RunnerStatus{XEngine::RunnerStopReason::RunnerOk};
+    });
+  }
+
+  int count2 = 100;
+  for (int i = count2; i > 0; i--) {
+    auto ret = builder.Emplace({}, "测试node10", []() {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      ++test_num;
+      return XEngine::RunnerStatus{XEngine::RunnerStopReason::RunnerOk};
+    });
+  }
+
+  XEngine::Runner runner{builder};
+  graph.Graphviz("test_has_args_function_runner_benchmark.svg");
+  int count3 = 2;
+  test_num = 0;
+  runner.Rebuild();
+  std::chrono::time_point<std::chrono::steady_clock> start_time_ =
+      std::chrono::steady_clock::now();
+  for (int i = count3; i > 0; i--) { runner.Run(); }
+  DEBUG << std::chrono::steady_clock::now() - start_time_ << std::endl;
+  REQUIRE(test_num == (count1 + count2) * count3);
 }

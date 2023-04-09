@@ -6,9 +6,16 @@
 ***************************/
 #pragma once
 #include <algorithm>
+#include <array>
 #include <atomic>
+#include <bit>
+#include <bitset>
 #include <chrono>
+#include <cstdint>
+#include <execution>
 #include <limits>
+#include <list>
+#include <memory_resource>
 #include <numeric>
 #include <optional>
 #include <string_view>
@@ -20,31 +27,10 @@
 #include "task/flow_builder.hpp"
 #include "task/task.hpp"
 
-/*
-The Runner class is a template class that is designed to execute a set of tasks
-in parallel. The template parameter Builder is the type of the object that
-builds the directed acyclic graph (DAG) representing the dependencies between
-tasks.
-
-The Runner class has a private member variable builder_ of type BuilderType,
-which is a reference to the object that builds the DAG. The class also has three
-private member variables: finished_, running_, and is_running_. finished_ is an
-std::unordered_map that keeps track of whether a task has been executed.
-running_ is also an std::unordered_map that keeps track of whether a task is
-currently being executed. is_running_ is an std::atomic_flag that is used to
-stop the execution of the tasks.
-
-The Runner class has several public member functions. The Stop function sets the
-is_running_ flag to false, which stops the execution of the tasks. The Rebuild
-function rebuilds the DAG based on the current state of the builder object. The
-Run function executes the tasks in parallel. The Run function takes a variable
-number of arguments that are passed to the Run method of each task. The Run
-function returns an std::optional that contains a RunnerStatus object that
-describes the reason for stopping the execution of the tasks. If the execution
-is stopped because of an error, the RunnerStatus object also contains an error
-message. */
-
 namespace XEngine {
+
+#define RUN_OPTIMAZE
+
 HAS_MEMBER_TRAITS(Run);
 HAS_MEMBER_RET_TRAITS(Run);
 enum class RunnerStopReason {
@@ -53,18 +39,18 @@ enum class RunnerStopReason {
 };
 
 struct RunnerStatus {
-  constexpr RunnerStatus(const RunnerStopReason& stop_reason) noexcept {
+  explicit RunnerStatus(const RunnerStopReason& stop_reason) noexcept {
     stop_reason_ = stop_reason;
   }
   [[nodiscard]] constexpr RunnerStatus() = default;
   // [[nodiscard]] constexpr bool operator()() const noexcept {
   //   return stop_reason_ == RunnerStopReason::RunnerOk;
   // }
-  [[nodiscard]] constexpr operator bool() const noexcept {
+  [[nodiscard]] constexpr explicit operator bool() const noexcept {
     return stop_reason_ == RunnerStopReason::RunnerOk;
   }
   [[nodiscard]] constexpr bool operator!() const noexcept {
-    return stop_reason_ == RunnerStopReason::RunnerOk ? false : true;
+    return stop_reason_ != RunnerStopReason::RunnerOk;
   }
   [[nodiscard]] constexpr RunnerStopReason StopReason() const noexcept {
     return stop_reason_;
@@ -74,9 +60,7 @@ struct RunnerStatus {
     ErrorMessage = msg.data();
     return std::move(*this);
   }
-  [[nodiscard]] constexpr std::string ErrorMsg() const noexcept {
-    return ErrorMessage;
-  }
+  [[nodiscard]] std::string ErrorMsg() const noexcept { return ErrorMessage; }
 
  private:
   RunnerStopReason stop_reason_{RunnerStopReason::RunnerTimeLimit};
@@ -91,133 +75,128 @@ class Runner {
   using NodeIdType = typename GraphType::NodeIdType;
 
  public:
-  constexpr Runner(BuilderType& builder) noexcept(
+  Runner(const Runner&) = delete;
+  Runner(Runner&&) = delete;
+  Runner& operator=(const Runner&) = delete;
+  Runner& operator=(Runner&&) = delete;
+  constexpr explicit Runner(BuilderType& builder) noexcept(
       std::is_nothrow_default_constructible_v<Builder>)
       : builder_(builder) {}
-  [[nodiscard]] constexpr ~Runner() noexcept { Stop(); }
-  [[nodiscard]] constexpr void Stop() noexcept { is_running_.clear(); }
-  [[nodiscard]] constexpr std::optional<std::vector<NodeIdType>> Rebuild(
-      BuilderType& builder) noexcept {
-    const auto& vec = builder.Linearize();
-    [[unlikely]] if (!vec.has_value()) { return std::nullopt; }
-    finished_.clear();
-    running_.clear();
-    for (const auto& id : vec.value()) {
-      finished_.try_emplace(id, false);
-      running_.try_emplace(id, false);
-    }
-    is_running_.test_and_set();
-    return vec;
+  constexpr ~Runner() noexcept { Stop(); }
+  constexpr void Stop() noexcept { running_.clear(std::memory_order_release); }
+
+  [[nodiscard]] constexpr bool Rebuild() noexcept {
+    Stop();
+    if (!running_.test_and_set(std::memory_order_acquire)) [[likely]] {
+        const auto& vec = builder_.Linearize();
+        [[unlikely]] if (!vec.has_value()) {
+          Stop();
+          return false;
+        }
+        /* 统计相邻节点依赖关系 */
+        dep_table_.resize(vec.value().size(), NodeIdNone);
+        for (int i = 0; i < vec.value().size(); i++) {
+          /* 反向遍历,找到临近依赖节点 */
+          for (int f_i = i - 1; f_i >= 0; f_i--) {
+            /* 判断是有边 */
+            if (builder_.WorkFlows().HasEdge(vec.value()[f_i], vec.value()[i]))
+              [[likely]] {
+                dep_table_[vec.value()[i]] = vec.value()[f_i];
+                break;
+              }
+          }
+        }
+        work_flows_.assign(vec.value().begin(), vec.value().end());
+      }
+    return true;
   }
 
+  /* 并行优化 */
   template <typename RetType = RunnerStatus, typename... Args>
   [[nodiscard]] constexpr std::optional<RetType> Run(Args&&... args) {
-    start_time_ = std::chrono::steady_clock::now();
-    struct RetWarpper {
-      RetWarpper(const NodeIdType& id, const RetType& node_ret)
-          : id_(id), node_ret_(node_ret) {}
-      NodeIdType Id() const { return id_; }
-      RetType RetValue() const { return node_ret_; }
-      NodeIdType id_;
-      RetType node_ret_;
-    };
-    const auto& work_flows = Rebuild(builder_);
-    if (!work_flows) {
-      ERROR << "Failed to invoked Rebuild\n";
-      return std::nullopt;
-    }
-
-    auto finish_count = work_flows.value().size();
-    std::vector<std::future<std::optional<RetWarpper>>> future_list{};
-    while (is_running_.test()) {
-      for (const auto& iter : work_flows.value()) {
-        /* 必须是没在跑并且没有运行过
-        Must not be running and must not have been running.*/
-        [[likely]] if (!running_[iter] && !finished_[iter]) {
-          /* 如果入度>0,就查看依赖的节点有没有跑完
-          If the indegree > 0, then check to see if the dependent nodes have
-          been run. */
-          std::uint32_t edge_count = builder_.WorkFlows().Indegree(iter);
-          [[likely]] if (edge_count > 0) {
-            for (const auto& [id, state] : finished_) {
-              [[likely]] if (state && builder_.WorkFlows().HasEdge(id, iter)) {
-                --edge_count;
-              }
-            }
+    uint32_t finish_count = work_flows_.size();
+    std::pmr::monotonic_buffer_resource mr{
+        (sizeof(std::pair<NodeIdType, RunnerFutureType<RetType>>) +
+         (sizeof(NodeIdType) * 2)) *
+        finish_count};
+    std::vector<NodeIdType, std::pmr::polymorphic_allocator<NodeIdType>> finish(
+        finish_count, 0);
+    std::list<NodeIdType, std::pmr::polymorphic_allocator<NodeIdType>>
+        work_flows(&mr);
+    work_flows.assign(work_flows_.begin(), work_flows_.end());
+    std::list<std::pair<NodeIdType, RunnerFutureType<RetType>>,
+              std::pmr::polymorphic_allocator<
+                  std::pair<NodeIdType, RunnerFutureType<RetType>>>>
+        future_list(&mr);
+    while (finish_count > 0 && running_.test(std::memory_order_acquire)) {
+      for (auto it = work_flows.begin(); it != work_flows.end();) {
+        NodeIdType dep_id = dep_table_[*it];
+        if (dep_id == NodeIdNone || finish[dep_id] != 0) [[likely]] {
+            future_list.emplace_back(
+                *it,
+                std::move(Async(&Runner<BuilderType>::Execl<RetType, Args...>,
+                                this, &(builder_.WorkFlows().GetNode(*it)),
+                                std::forward<Args>(args)...)));
+            it = work_flows.erase(it);
           }
-          [[likely]] if (edge_count == 0) {
-            running_[iter] = true;
-            future_list.emplace_back(std::move(
-                Async(&Runner<BuilderType>::Execl<RetType, RetWarpper, Args...>,
-                      this, iter, &(builder_.WorkFlows().GetNode(iter)),
-                      std::forward<Args>(args)...)));
-          }
+        else {
+          ++it;
         }
       }
 
-      decltype(future_list) new_future_list{future_list.size()};
-      for (auto& future : future_list) {
-        [[likely]] if (future.valid()) {
-          const auto& future_status =
-              future.wait_for(std::chrono::milliseconds(10));
-          [[likely]] if (future_status == std::future_status::ready) {
-            auto status = future.get();
-            [[likely]] if (status.has_value()) {
-              [[unlikely]] if (!status.value().RetValue()) {
-                ERROR << "Failed runner by:" << status.value().Id();
-                return status.value().RetValue();
-              }
-              finished_[status.value().Id()] = true;
-              --finish_count;
-              [[unlikely]] if (finish_count <= 0) {
-                return status.value().RetValue();
-              }
-            }
+      for (auto pair = future_list.begin(); pair != future_list.end();) {
+        [[likely]] if (pair->second.wait_for(std::chrono::microseconds(1)) ==
+                       ReadyValue) {
+          auto ret = pair->second.get();
+          [[unlikely]] if (!ret) {
+            ERROR << "Failed runner by:" << pair->first;
+            Stop();
+            return ret;
           }
-          else {
-            new_future_list.emplace_back(std::move(future));
-          }
+          --finish_count;
+          finish[pair->first] = 1;
+          pair = future_list.erase(pair);
+        }
+        else {
+          ++pair;
         }
       }
-      future_list = std::move(new_future_list);
-      [[unlikely]] if (CheckLimits()) { return std::nullopt; }
     }
     return std::nullopt;
   }
 
-  template <typename RetType, typename RetWarpper, typename... Args>
-  [[nodiscard]] constexpr std::optional<RetWarpper> Execl(
-      const NodeIdType& id, std::function<NodeType>* node_data,
+  template <typename RetType, typename... Args>
+  [[nodiscard]] constexpr RetType Execl(
+      std::function<NodeType>* node_data,
       Args&&... args) requires(std::is_function_v<NodeType>) {
-    return RetWarpper{id, (*node_data)(std::forward<Args>(args)...)};
+    return (*node_data)(std::forward<Args>(args)...);
   }
 
-  template <typename RetType, typename RetWarpper>
-  [[nodiscard]] constexpr std::optional<RetWarpper> Execl(
-      const NodeIdType& id,
-      NodeType* node_data) requires(!std::is_function_v<NodeType>) {
-    if constexpr (HasMemberName<RetWarpper> ||
-                  CheckSmartPointerHasName<NodeType> ||
-                  CheckPointerHasName<NodeType>) {
-      DEBUG << node_data->Name() << std::endl;
-    }
+  template <typename RetType>
+  [[nodiscard]] constexpr RetType Execl(NodeType* node_data) requires(
+      !std::is_function_v<NodeType>) {
+    // if constexpr (HasMemberName<NodeType> ||
+    //               CheckSmartPointerHasName<NodeType> ||
+    //               CheckPointerHasName<NodeType>) {
+    //   DEBUG << node_data->Name() << std::endl;
+    // }
     static_assert(HasMemberRun<NodeType>);
     static_assert(HasRetMemberRun<NodeType, RetType>);
     /* run */
-    return RetWarpper{id, node_data->Run()};
+    return node_data->Run();
   }
 
   template <class Rep, class Period>
-  [[nodiscard]] constexpr void SetTimeLimit(
+  constexpr void SetTimeLimit(
       const std::chrono::duration<Rep, Period>& limit) noexcept {
     time_limit_ = std::chrono::duration_cast<std::chrono::milliseconds>(limit);
   }
   [[nodiscard]] constexpr std::optional<RunnerStopReason>
   CheckLimits() noexcept {
-    [[likely]] if (time_limit_.has_value()) {
+    [[likely]] if (time_limit_.has_value()) [[likely]] {
       const auto& elapsed = std::chrono::steady_clock::now() - start_time_;
       INFO << "run time :" << elapsed << std::endl;
-      [[unlikely]] if (elapsed > time_limit_.value()) {
+      [[unlikely]] if (elapsed > time_limit_.value()) [[unlikely]] {
         ERROR << "Time limit :" << elapsed << std::endl;
         return RunnerStopReason::RunnerTimeLimit;
       }
@@ -225,13 +204,14 @@ class Runner {
     return std::nullopt;
   }
 
- protected:
+ private:
   BuilderType& builder_{};
   std::optional<std::chrono::milliseconds> time_limit_;
   std::chrono::time_point<std::chrono::steady_clock> start_time_;
-  std::unordered_map<NodeIdType, bool> finished_{};
-  std::unordered_map<NodeIdType, bool> running_{};
-  std::atomic_flag is_running_{};
+  std::atomic_flag running_{};
+  // std::atomic_bool running_{false};
+  std::list<NodeIdType> work_flows_{};
+  std::vector<NodeIdType> dep_table_{};
 };
 
 }  // namespace XEngine

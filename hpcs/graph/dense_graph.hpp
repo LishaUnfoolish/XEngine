@@ -20,6 +20,10 @@ class DenseGraph : public AdjacencyMatrix<Matrix<Edge>, Node> {
   using NodeType = Node;
   using EdgeIterator = typename GraphTraits<BaseT>::EdgeIterator;
 
+  constexpr void Reserve(
+      const std::uint32_t& node_count) noexcept {
+    return BaseT::Reserve(node_count);
+  }
   template <typename T>
   [[nodiscard]] constexpr NodeId AddNode(const T& node) noexcept
       requires(!std::is_void_v<T> && std::is_convertible_v<T, NodeType>) {
@@ -76,7 +80,7 @@ class DenseGraph : public AdjacencyMatrix<Matrix<Edge>, Node> {
     return pos;
   }
 
-  [[nodiscard]] constexpr void EraseNode(NodeId node) noexcept {
+  constexpr void EraseNode(NodeId node) noexcept {
     if (!(node < BaseT::Order())) [[likely]] {
         assert(false && "Out of node index.");
       }
@@ -91,7 +95,7 @@ class DenseGraph : public AdjacencyMatrix<Matrix<Edge>, Node> {
     }
   }
 
-  [[nodiscard]] constexpr void EraseEdges() noexcept {
+  constexpr void EraseEdges() noexcept {
     assert(false); /* todo */
   }
 };

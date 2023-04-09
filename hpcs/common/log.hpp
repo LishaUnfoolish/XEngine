@@ -6,12 +6,14 @@
 ***************************/
 #pragma once
 
-#include <stdarg.h>
-
 #include <atomic>
+#include <cstdarg>
 #include <fstream>
+#include <iostream>
 #include <mutex>
 #include <string>
+
+namespace XEngine {
 #define LEFT_BRACKET "["
 #define RIGHT_BRACKET "]"
 
@@ -20,10 +22,9 @@
 #endif
 
 #define FILE_INFO __FILE__ << ":" << __LINE__ << " "
-static inline std::atomic<std::ostream*> cout_{&std::cout};
-#define DEBUG_MODULE(module)                                              \
-  (*cout_.load()) << LEFT_BRACKET << module << RIGHT_BRACKET << FILE_INFO \
-                  << "[DEBUG] "
+#define DEBUG_MODULE(module)                                          \
+  std::cout << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO \
+            << "[DEBUG] "
 
 // #define DEBUG_MODULE(module) std::ofstream{}
 #define DEBUG DEBUG_MODULE(MODULE_NAME)
@@ -41,13 +42,14 @@ static inline std::atomic<std::ostream*> cout_{&std::cout};
 #endif
 
 #define LOG_MODULE_STREAM_INFO(module) \
-  (*cout_.load()) << LEFT_BRACKET << module << RIGHT_BRACKET << FILE_INFO
+  (std::cout) << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO
 
 #define LOG_MODULE_STREAM_WARN(module) \
-  (*cout_.load()) << LEFT_BRACKET << module << RIGHT_BRACKET << FILE_INFO
+  (std::cout) << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO
 
 #define LOG_MODULE_STREAM_ERROR(module) \
-  (*cout_.load()) << LEFT_BRACKET << module << RIGHT_BRACKET << FILE_INFO
+  (std::cout) << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO
 
 #define LOG_MODULE_STREAM_FATAL(module) \
-  (*cout_.load()) << LEFT_BRACKET << module << RIGHT_BRACKET << FILE_INFO
+  (std::cout) << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO
+}  // namespace XEngine

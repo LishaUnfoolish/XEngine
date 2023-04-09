@@ -59,14 +59,14 @@ class BfIterator {
   [[nodiscard]] constexpr bool IsEnd() const noexcept {
     return node_start_ == NodeIdNone;
   }
-  [[nodiscard]] constexpr void Start(const NodeIdType& node) noexcept {
+  constexpr void Start(const NodeIdType& node) noexcept {
     assert(IsEnd() && !is_visited_[node]);
     node_start_ = node;
     if (FindEdge) {
       ++(*this);  // skip start node
     }
   }
-  [[nodiscard]] constexpr void ToNext() noexcept {
+  constexpr void ToNext() noexcept {
     assert(!IsEnd());
     if (!is_visited_[node_start_]) {
       assert(visit_queue_.empty());

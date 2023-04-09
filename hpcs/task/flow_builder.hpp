@@ -20,9 +20,13 @@ class FlowBuilder {
   using NodeType = typename GraphType::NodeType;
   using NodeIdType = typename GraphType::NodeIdType;
 
-  [[nodiscard]] constexpr FlowBuilder(GraphType& graph) noexcept(
+  [[nodiscard]] constexpr explicit FlowBuilder(GraphType& graph) noexcept(
       std::is_nothrow_default_constructible_v<GraphType>)
       : graph_{graph} {}
+
+  constexpr void Reserve(const std::uint32_t& node_count) const noexcept {
+    return graph_.Reserve(node_count);
+  }
   // Function: Emplace
   template <typename... Args>
   [[nodiscard]] constexpr NodeIdType Emplace(const std::set<NodeIdType>& deps,
@@ -69,7 +73,7 @@ class FlowBuilder {
 
   template <typename T>
   [[nodiscard]] constexpr NodeIdType Emplace(const std::set<NodeIdType>& deps,
-                                             const std::string& name,
+                                             const std::string& /*name*/,
                                              const T& lambda) noexcept
       requires(std::is_function_v<NodeType>) {
     NodeIdType node_index = graph_.AddNode(std::move(lambda));

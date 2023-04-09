@@ -71,8 +71,7 @@ TEST_CASE("test_graph_edge") {
   graph.AddEdge(1, 2, EdgeTest{123});
   REQUIRE(graph.HasEdge(1, 2));
 
-  const auto& edge = graph.Edges(1, 2);
-  for (auto& iter : edge) { REQUIRE(iter() == 123); }
+  REQUIRE(graph.Edges(1, 2) == EdgeTest{123});
 
   REQUIRE(graph.Outdegree(1) == 1);
   REQUIRE(graph.Outdegree(2) == 0);

@@ -28,8 +28,7 @@ class IteratorRange {
   IteratorRange() = default;
   IteratorRange(IteratorRange&&) = default;
 
-  [[nodiscard]] constexpr void Reset(const Iterator& first,
-                                     const Iterator& last) noexcept {
+  constexpr void Reset(const Iterator& first, const Iterator& last) noexcept {
     first_ = first;
     last_ = last;
   }
@@ -41,6 +40,8 @@ class IteratorRange {
       const IteratorRange& rhs) const noexcept {
     return first_ != rhs.first_ || last_ != rhs.last_;
   }
+  // 索引运算符
+  Iterator operator[](const size_t& index) { return first_ + index; }
 
   // iterator range
   [[nodiscard]] constexpr Iterator begin() noexcept { return first_; }
@@ -53,7 +54,7 @@ class IteratorRange {
     return std::distance(first_, last_);
   }
   [[nodiscard]] constexpr Iterator& operator++() { return ++first_; }
-  [[nodiscard]] constexpr void Advance(const DifferenceType& distance) {
+  constexpr void Advance(const DifferenceType& distance) {
     std::advance(first_, distance);
   }
   [[nodiscard]] constexpr decltype(auto) operator*() { return *first_; }

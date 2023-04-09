@@ -2221,7 +2221,7 @@ class Capturer {
                                            // evaluated at runtime but it forces
                                            // the compiler to give it a look
    // The double negation silences MSVC's C4800 warning, the static_cast forces
-   // short-circuit evaluation if the type has overloaded &&.
+   // short-circuit evaluation if the type has Overloaded &&.
 
 ///////////////////////////////////////////////////////////////////////////////
 #define INTERNAL_CATCH_IF(macroName, resultDisposition, ...)      \
@@ -4746,7 +4746,7 @@ struct CumulativeReporterBase : IStreamingReporter {
 
     using ChildNodes = std::vector<std::shared_ptr<ChildNodeT>>;
     T value;
-    ChildNodes Children;
+    ChildNodes children;
   };
   struct SectionNode {
     explicit SectionNode(SectionStats const& _stats) : stats(_stats) {}
@@ -4852,7 +4852,7 @@ struct CumulativeReporterBase : IStreamingReporter {
   void testCaseEnded(TestCaseStats const& testCaseStats) override {
     auto node = std::make_shared<TestCaseNode>(testCaseStats);
     assert(m_sectionStack.size() == 0);
-    node->Children.push_back(m_rootSection);
+    node->children.push_back(m_rootSection);
     m_testCases.push_back(node);
     m_rootSection.reset();
 
@@ -4862,12 +4862,12 @@ struct CumulativeReporterBase : IStreamingReporter {
   }
   void testGroupEnded(TestGroupStats const& testGroupStats) override {
     auto node = std::make_shared<TestGroupNode>(testGroupStats);
-    node->Children.swap(m_testCases);
+    node->children.swap(m_testCases);
     m_testGroups.push_back(node);
   }
   void testRunEnded(TestRunStats const& testRunStats) override {
     auto node = std::make_shared<TestRunNode>(testRunStats);
-    node->Children.swap(m_testGroups);
+    node->children.swap(m_testGroups);
     m_testRuns.push_back(node);
     testRunEndedCumulative();
   }
@@ -11573,7 +11573,7 @@ void TrackerBase::open() {
 }
 
 void TrackerBase::close() {
-  // Close any still open Children (e.g. generators)
+  // Close any still open children (e.g. generators)
   while (&m_ctx.currentTracker() != this) m_ctx.currentTracker().close();
 
   switch (m_runState) {
@@ -13648,7 +13648,7 @@ void JunitReporter::writeGroup(TestGroupNode const& groupNode,
   xml.writeAttribute("timestamp", getCurrentTimestamp());
 
   // Write test cases
-  for (auto const& child : groupNode.Children) writeTestCase(*child);
+  for (auto const& child : groupNode.children) writeTestCase(*child);
 
   xml.scopedElement("system-out").writeText(trim(stdOutForSuite), false);
   xml.scopedElement("system-err").writeText(trim(stdErrForSuite), false);
@@ -13659,8 +13659,8 @@ void JunitReporter::writeTestCase(TestCaseNode const& testCaseNode) {
 
   // All test cases have exactly one section - which represents the
   // test case itself. That section may have 0-n nested sections
-  assert(testCaseNode.Children.size() == 1);
-  SectionNode const& rootSection = *testCaseNode.Children.front();
+  assert(testCaseNode.children.size() == 1);
+  SectionNode const& rootSection = *testCaseNode.children.front();
 
   std::string className = stats.testInfo.className;
 

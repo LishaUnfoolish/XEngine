@@ -8,6 +8,8 @@
 // base llvm
 #include <fstream>
 #include <iterator>
+#include <span>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -32,10 +34,10 @@ inline constexpr bool CheckPointerHasName = requires {
 };
 
 struct DefaultDOTGraphTraits {
-  explicit DefaultDOTGraphTraits() {}
+  explicit DefaultDOTGraphTraits() = default;
   template <typename GraphType>
-  [[nodiscard]] static constexpr std::string getGraphName(
-      const GraphType&) noexcept {
+  [[nodiscard]] static constexpr std::string_view getGraphName(
+      const GraphType& /*unused*/) noexcept {
     return "xEngine Graph";
   }
 };
@@ -60,8 +62,7 @@ class GraphWriter {
     dot_traits_ = DOTTraits();
   }
 
-  [[nodiscard]] constexpr void WriteGraph(
-      const std::string& title = "") noexcept {
+  constexpr void WriteGraph(const std::string& title = "") noexcept {
     // Output the header for the graph...
     WriteHeader(title);
     // Emit all of the nodes in the graph...
@@ -72,7 +73,7 @@ class GraphWriter {
     WriteFooter();
   }
 
-  [[nodiscard]] constexpr void WriteHeader(const std::string& title) noexcept {
+  constexpr void WriteHeader(const std::string& title) noexcept {
     std::string graph_name(dot_traits_.getGraphName(graph_));
     if (!title.empty()) {
       output_ << "digraph \"" << title << "\" {\n";
@@ -89,12 +90,12 @@ class GraphWriter {
         << "edge [arrowsize=0.5]\n";
   }
 
-  [[nodiscard]] constexpr void WriteFooter() noexcept {
+  constexpr void WriteFooter() noexcept {
     // Finish off the graph
     output_ << "\n}\n";
   }
 
-  [[nodiscard]] constexpr void WriteNodes() noexcept {
+  constexpr void WriteNodes() noexcept {
     BfIterator<const GraphType> iter(graph_, 0);
     for (; !iter.IsEnd(); ++iter) {
       output_ << *iter << "[";
@@ -110,7 +111,7 @@ class GraphWriter {
     }
   }
 
-  [[nodiscard]] constexpr void WriteEdges() noexcept {
+  constexpr void WriteEdges() noexcept {
     BfIterator<const GraphType, true> iter(graph_, 0);
     for (; !iter.IsEnd(); ++iter) {
       output_ << iter.From() << "->" << *iter << ";\n";
@@ -128,17 +129,15 @@ class GraphWriter {
 };
 
 template <typename GraphType>
-[[nodiscard]] constexpr void WriteGraph(std::ostream& output,
-                                        const GraphType& graph,
-                                        const std::string& title) noexcept {
+constexpr void WriteGraph(std::ostream& output, const GraphType& graph,
+                          const std::string& title) noexcept {
   GraphWriter<GraphType> output_string(output, graph);
   output_string.WriteGraph(title);
 }
 
 template <typename GraphType>
-[[nodiscard]] constexpr void WriteGraph(const GraphType& graph,
-                                        const std::string& file_name,
-                                        const std::string& title) noexcept {
+constexpr void WriteGraph(const std::string& file_name, const GraphType& graph,
+                          const std::string& title) noexcept {
   std::ostringstream output{};
   XEngine::WriteGraph(output, graph, title);
 
@@ -152,10 +151,10 @@ template <typename GraphType>
 }
 
 template <typename GraphType>
-[[nodiscard]] constexpr void ViewGraph(const GraphType& graph,
-                                       const std::string& file_name = "",
-                                       const std::string& title = "") noexcept {
-  XEngine::WriteGraph(graph, file_name, title);
+constexpr void ViewGraph(const GraphType& graph,
+                         const std::string& file_name = "",
+                         const std::string& title = "") noexcept {
+  XEngine::WriteGraph(file_name, graph, title);
 }
 
 }  // namespace XEngine

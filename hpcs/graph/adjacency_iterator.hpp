@@ -31,7 +31,7 @@ class AdjacencyIterator {
         std::distance(graph_.OutEdges(from_).begin(), range_.begin()));
   }
   [[nodiscard]] constexpr NodeId operator*() const noexcept { return To(); }
-  [[nodiscard]] constexpr void operator++() noexcept {
+  constexpr void operator++() noexcept {
     assert(!IsEnd());
     ++range_;
     while (!IsEnd() && *range_ == EdgeTraits<EdgeType>::placeholders) {

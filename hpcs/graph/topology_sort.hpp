@@ -4,7 +4,7 @@
 @Time: 2023/02/29
 ***************************/
 #pragma once
-#include <assert.h>
+#include <cassert>
 
 #include <queue>
 #include <type_traits>
@@ -14,7 +14,7 @@ namespace XEngine {
 template <typename Dag>
 class TopologySort {
  public:
-  constexpr TopologySort(const Dag& dag) noexcept(
+  constexpr explicit TopologySort(const Dag& dag) noexcept(
       std::is_nothrow_default_constructible_v<Dag>) {
     NodeId node_size = dag.Order();
     sort_.resize(node_size, NodeIdNone);
@@ -38,6 +38,33 @@ class TopologySort {
       }
     }
   }
+
+  // // Optimization 3.19 有问题
+  // constexpr TopologySort(const Dag& dag) noexcept(
+  //     std::is_nothrow_default_constructible_v<Dag>) {
+  //   NodeId node_size = dag.Order();
+  //   sort_.resize(node_size, NodeIdNone);
+  //   node_index_order.resize(node_size);
+  //   std::vector<NodeId> node_indegrees(node_size);
+  //   std::queue<NodeId> queue{};
+  //   for (NodeId index = 0; index < node_size; index++) {
+  //     /* find all indegree /
+  //     node_indegrees[index] = dag.Indegree(index);
+  //     / find indegree is zero and push it to queue */
+  //     if (node_indegrees[index] == 0) { queue.push(index); }
+  //   }
+  //   for (size_t i = 0; !queue.empty(); i++) {
+  //     NodeId index = queue.front();
+  //     queue.pop();
+  //     sort_[i] = index;
+  //     node_index_order[index] = i;
+  //     auto iter = AdjacencyIterator(dag, index);
+  //     for (; !iter.IsEnd(); ++iter) {
+  //       if (0 == --node_indegrees[*iter]) { queue.push(*iter); }
+  //     }
+  //   }
+  // }
+
   [[nodiscard]] constexpr NodeId GetNodeIdOrder(
       const NodeId& index) const noexcept {
     return node_index_order[index];

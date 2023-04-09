@@ -28,6 +28,13 @@ class AdjacencyMatrix {
   using NodeType = Node;
   using EdgeType =
       std::decay_t<decltype(*std::declval<Matrix>().Row(0).begin())>;
+  constexpr void Reserve(
+      const std::uint32_t& node_count) noexcept {
+    if constexpr (!std::is_void_v<Node>) {
+      adjacency_matrix_.Reserve(node_count, node_count);
+      nodes.reserve(node_count);
+    }
+  }
 
   [[nodiscard]] constexpr NodeId Order() const noexcept {
     // The order of the graph
@@ -38,16 +45,19 @@ class AdjacencyMatrix {
     // Number of sides
     return edges_sentinel_;
   }
-  [[nodiscard]] constexpr void EdgeIncrease() noexcept { ++edges_sentinel_; }
-  [[nodiscard]] constexpr void EdgeDecrease() noexcept { --edges_sentinel_; }
-  [[nodiscard]] constexpr void ResetEdge() noexcept { edges_sentinel_ = 0; }
+  constexpr void EdgeIncrease() noexcept { ++edges_sentinel_; }
+  constexpr void EdgeDecrease() noexcept { --edges_sentinel_; }
+  constexpr void ResetEdge() noexcept { edges_sentinel_ = 0; }
 
   [[nodiscard]] constexpr decltype(auto) GetNode(const NodeId& index) noexcept
-      requires(!std::is_void_v<Node>) {
+    requires(!std::is_void_v<Node>)
+  {
     return nodes.at(index);
   }
   [[nodiscard]] constexpr decltype(auto) GetNode(
-      const NodeId& index) const noexcept requires(!std::is_void_v<Node>) {
+      const NodeId& index) const noexcept
+    requires(!std::is_void_v<Node>)
+  {
     return nodes.at(index);
   }
 
@@ -57,6 +67,15 @@ class AdjacencyMatrix {
   }
   [[nodiscard]] constexpr auto OutEdges(const NodeId& index) const noexcept {
     return adjacency_matrix_.Row(index);
+  }
+
+  auto InEdges(const NodeId& index) noexcept {
+    // The incoming edge of the node
+    return adjacency_matrix_.Col(index);
+  }
+  auto InEdges(const NodeId& index) const noexcept {
+    // The incoming edge of the node
+    return adjacency_matrix_.Col(index);
   }
 
  protected:
