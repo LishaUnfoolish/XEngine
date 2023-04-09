@@ -43,11 +43,11 @@ class MemberClass {
   static_assert(std::is_member_pointer_v<Member>,
                 "Invalid pointer type to non-static member object or function");
   template <typename Class, typename Ret, typename... Args>
-  static Class *C(Ret (Class::*)(Args...));
+  static Class* C(Ret (Class::*)(Args...));
   template <typename Class, typename Ret, typename... Args>
-  static Class *C(Ret (Class::*)(Args...) const);
+  static Class* C(Ret (Class::*)(Args...) const);
   template <typename Class, typename Type>
-  static Class *C(Type Class::*);
+  static Class* C(Type Class::*);
 
  public:
   using type = std::remove_pointer_t<decltype(C(std::declval<Member>()))>;
@@ -77,33 +77,33 @@ struct TypeInfo final {
   std::string_view alias;
 };
 
-[[nodiscard]] inline constexpr bool operator==(const TypeInfo &lhs,
-                                               const TypeInfo &rhs) noexcept {
+[[nodiscard]] inline constexpr bool operator==(const TypeInfo& lhs,
+                                               const TypeInfo& rhs) noexcept {
   return lhs.hash() == rhs.hash();
 }
-[[nodiscard]] inline constexpr bool operator!=(const TypeInfo &lhs,
-                                               const TypeInfo &rhs) noexcept {
+[[nodiscard]] inline constexpr bool operator!=(const TypeInfo& lhs,
+                                               const TypeInfo& rhs) noexcept {
   return !(lhs == rhs);
 }
-[[nodiscard]] constexpr bool operator<(const TypeInfo &lhs,
-                                       const TypeInfo &rhs) noexcept {
+[[nodiscard]] constexpr bool operator<(const TypeInfo& lhs,
+                                       const TypeInfo& rhs) noexcept {
   return lhs.index() < rhs.index();
 }
-[[nodiscard]] constexpr bool operator<=(const TypeInfo &lhs,
-                                        const TypeInfo &rhs) noexcept {
+[[nodiscard]] constexpr bool operator<=(const TypeInfo& lhs,
+                                        const TypeInfo& rhs) noexcept {
   return !(rhs < lhs);
 }
-[[nodiscard]] constexpr bool operator>(const TypeInfo &lhs,
-                                       const TypeInfo &rhs) noexcept {
+[[nodiscard]] constexpr bool operator>(const TypeInfo& lhs,
+                                       const TypeInfo& rhs) noexcept {
   return rhs < lhs;
 }
-[[nodiscard]] constexpr bool operator>=(const TypeInfo &lhs,
-                                        const TypeInfo &rhs) noexcept {
+[[nodiscard]] constexpr bool operator>=(const TypeInfo& lhs,
+                                        const TypeInfo& rhs) noexcept {
   return !(lhs < rhs);
 }
 
 template <typename Type>
-[[nodiscard]] const TypeInfo &TypeId() noexcept {
+[[nodiscard]] const TypeInfo& TypeId() noexcept {
   if constexpr (std::is_same_v<
                     Type, std::remove_cv_t<std::remove_reference_t<Type>>>) {
     static TypeInfo instance{std::in_place_type<Type>};
@@ -114,7 +114,7 @@ template <typename Type>
 }
 
 template <typename Type>
-[[nodiscard]] const TypeInfo &TypeId(Type &&) noexcept {
+[[nodiscard]] const TypeInfo& TypeId(Type&&) noexcept {
   return TypeId<std::remove_cv_t<std::remove_reference_t<Type>>>();
 }
 
