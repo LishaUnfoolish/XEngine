@@ -21,6 +21,7 @@ There is a build and run process:
 1.The graph framework is flexible and currently uses an adjacency matrix to store information of each node. In the future, there will be options to add an adjacency list and chain forward star for more capabilities. Additionally, various graph algorithms can be implemented and interested developers can make pull requests (PRs).(https://github.com/LishaUnfoolish/XEngine/tree/master/hpcs/graph)<br>
 2.The flow builder module can be used in conjunction with the graph module to construct workflows for various tasks.。(https://github.com/LishaUnfoolish/XEngine/blob/master/hpcs/task/flow_builder.hpp)<br>
 3.The Runner module is responsible for executing workflows built by the Builder. Currently, a step is taken by feature and future coroutine scheduling will be added to the task directory..(https://github.com/LishaUnfoolish/XEngine/blob/master/hpcs/task/runner.hpp)<br>
+4.The 'scheduler' module is the scheduler for the coroutine pool. Currently, only a simple scheduler has been implemented, which is similar to the GPM architecture. In the future, different policies such as priority scheduler, time slice scheduler, preemptive scheduler, etc. will be added. These can be configured by writing a JSON configuration file.<br>
 
 
 
