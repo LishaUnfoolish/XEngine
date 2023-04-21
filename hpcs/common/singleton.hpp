@@ -6,7 +6,7 @@
 #pragma once
 #include "common/macros.hpp"
 
-HAS_MEMBER_TRAITS(ShutDown);
+HAS_MEMBER_TRAITS(Shutdown);
 
 template <typename T>
 class Singleton {
@@ -22,9 +22,9 @@ class Singleton {
     return instance;
   }
   static void Destroy() {
-    if constexpr (HasMemberShutDown<T>) {
+    if constexpr (HasMemberShutdown<T>) {
       auto instance = Instance(false);
-      if (instance != nullptr) { instance->ShutDown(); }
+      if (instance != nullptr) { instance->Shutdown(); }
     }
   }
 

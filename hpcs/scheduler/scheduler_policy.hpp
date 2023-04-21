@@ -5,17 +5,69 @@
 ***************************/
 #pragma once
 
+#include <atomic>
 #include <cassert>
+#include <cstddef>
+#include <deque>
+#include <future>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
+#include "common/singleton.hpp"
+#include "core/spin_lock.hpp"
+#include "scheduler/policy/scheduler_pool.hpp"
 #include "scheduler/policy/scheduler_priority.hpp"
 #include "scheduler/scheduler.hpp"
 #include "scheduler/scheduler_config.hpp"
+#include "scheduler/scheduler_policy.hpp"
 namespace XEngine {
+class SchedulerManager {
+ public:
+  SchedulerManager() {}
+  virtual ~SchedulerManager() { Shutdown(); }
+  void Shutdown() {
+    stop_.exchange(true);
+    thread_pool_.CleanUp();
+    Scheduler::Instance()->CleanUp();
+  }
+
+  template <typename F, typename... Args>
+  auto Submit(F&& func, Args&&... args)
+      -> std::future<std::invoke_result_t<F, Args...>> {
+    using return_type = std::invoke_result_t<F, Args...>;
+    auto task = std::make_shared<std::packaged_task<return_type()>>(
+        std::bind(std::forward<F>(func), std::forward<Args>(args)...));
+    if (!stop_.load()) [[likely]] {
+        auto cr = std::make_shared<Coroutine>();
+        cr->SetFunction([task]() -> XEngine::Future<XEngine::CoroutineState> {
+          (*task)();
+          co_return XEngine::CoroutineState::FINISHED;
+        });
+        thread_pool_.CreateTask(cr);
+      }
+    return task->get_future();
+  }
+
+ private:
+  std::atomic<bool> stop_ = {false};
+  SchedulerPool thread_pool_{};
+  DECLARE_SINGLETON(SchedulerManager)
+};
+
 Scheduler* Scheduler::Instance() {
   Scheduler* obj = Scheduler::instance_.load(std::memory_order_acquire);
   if (obj == nullptr) [[unlikely]] {
       obj = Scheduler::instance_.load(std::memory_order_relaxed);
       if (obj == nullptr) {
+        if (!XEngine::SchedulerConfig::AffinityCpuset(
+                pthread_self(),
+                SchedulerConfig::Instance()->GetProcessAffinityCpuset())) {
+          ERROR << "Failed to set affinity.\n";
+        }
         SchedulingPolicy policy = SchedulerConfig::Instance()->GetPolicy();
         if (policy == SchedulingPolicy::PRIORITY) [[unlikely]] {
             obj = new SchedulerPriority();

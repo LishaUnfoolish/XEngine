@@ -1,8 +1,3 @@
-/***************************
-@Author: Xhosa-LEE
-@Contact: lixiaoxmm@163.com
-@Time: 2023/04/10
-***************************/
 includes("third_party", {global=true})
 includes("hpcs", {global=true})
 set_project("XEngine")

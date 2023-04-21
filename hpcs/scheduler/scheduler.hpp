@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <functional>
 #include <map>
+#include <memory>
 #include <shared_mutex>
 #include <string_view>
 #include <thread>
@@ -25,12 +26,20 @@ class Scheduler {
   static Scheduler* Instance();
   static void CleanUp();
   template <class F, class... Args>
-  bool CreateTask(std::string_view name, F&& fn, Args&&... args) {
+  std::shared_ptr<Coroutine> CreateTask(std::string_view name, F&& fn,
+                                        Args&&... args) {
     auto cr = std::make_shared<Coroutine>();
     cr->SetFunction(std::forward<F>(fn), std::forward<Args>(args)...);
     cr->SetId(std::hash<std::string_view>{}(name));
     cr->SetName(std::string(name));
-    return CreateTask(cr);
+    if (!CreateTask(cr)) { return nullptr; }
+    return cr;
+  }
+  bool NotifyTask(const std::shared_ptr<Coroutine>& cr) {
+    if (stop_.load()) [[unlikely]] {
+        return true;
+      }
+    return NotifyProcessor(cr);
   }
 
  protected:
@@ -38,13 +47,12 @@ class Scheduler {
   Scheduler(Scheduler&&) = delete;
   Scheduler& operator=(const Scheduler&) = delete;
   Scheduler& operator=(Scheduler&&) = delete;
-  virtual ~Scheduler() = default;
+  virtual ~Scheduler() { CleanUp(); }
   Scheduler() : stop_(false) {}
+  virtual bool NotifyProcessor(const std::shared_ptr<Coroutine>& cr) = 0;
   virtual bool CreateTask(const std::shared_ptr<Coroutine>& cr) = 0;
   void Shutdown() {
-    if (stop_.exchange(true)) [[unlikely]] {
-        return;
-      }
+    stop_.exchange(true);
     for (auto& processor : processors_) { processor->Stop(); }
     processors_.clear();
   }

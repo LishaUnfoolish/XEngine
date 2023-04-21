@@ -13,7 +13,7 @@
 #include <string>
 #include <utility>
 namespace XEngine {
-enum class CoroutineState { READY, FINISHED };
+enum class CoroutineState { READY, DATA_WAIT, FINISHED };
 
 template <typename T>
 class Future {
@@ -39,7 +39,10 @@ class Future {
     }
 
     T get_value() { return value_; }
-    void set_value(T value) { value_ = value; }
+    bool set_value(T value) {
+      value_ = value;
+      return true;
+    }
 
    private:
     T value_{};
@@ -53,43 +56,59 @@ class Future {
   Future(Future&& other) noexcept : handle_(std::exchange(other.handle_, {})) {}
   Future& operator=(Future&& other) noexcept {
     if (this != &other) {
-      if (handle_) { handle_.destroy(); }
+      if (handle_.address() != nullptr && handle_) { handle_.destroy(); }
       handle_ = std::exchange(other.handle_, {});
     }
     return *this;
   }
   ~Future() {
-    if (handle_) {
+    if (handle_.address() != nullptr && handle_) {
       Stop();
       handle_.destroy();
     }
   }
   bool Resume() {
+    if (handle_.address() == nullptr) { return false; }
     handle_.resume();
     return true;
   }
-  void Stop() { handle_.promise().set_value(CoroutineState::FINISHED); }
-  T get_value() { return handle_.promise().get_value(); }
-  [[nodiscard]] bool Done() const { return handle_.done(); }
+  void Stop() {
+    if (handle_.address() == nullptr) { return; }
+    handle_.promise().set_value(CoroutineState::FINISHED);
+  }
+  T get_value() {
+    if (handle_.address() == nullptr) { return CoroutineState::FINISHED; }
+    return handle_.promise().get_value();
+  }
+  bool set_value(T state) {
+    if (handle_.address() == nullptr) { return false; }
+    return handle_.promise().set_value(state);
+  }
+  [[nodiscard]] bool Done() const {
+    if (handle_.address() == nullptr) { return true; }
+    return handle_.done();
+  }
 
  private:
   Handle handle_{};
 };
 
 ///////////////
-using CoroutineFunc = std::function<void()>;
+using CoroutineFunc = std::function<XEngine::Future<XEngine::CoroutineState>()>;
 class Coroutine {
  public:
-  explicit Coroutine(CoroutineFunc func) : func_(std::move(func)) { func_(); }
   Coroutine() = default;
+  Coroutine(CoroutineFunc fn)
+      : fun_(std::move(fn)), future_(std::move(fun_())) {}
   virtual ~Coroutine() {
     Acquire();
     Stop();
     Release();
   }
-  template <class F, class... Args>
-  void SetFunction(F&& fn, Args&&... args) {
-    future_ = std::move(std::forward<F>(fn)(std::forward<Args>(args)...));
+
+  void SetFunction(const CoroutineFunc& fn) {
+    fun_ = fn;
+    future_ = fun_();
   }
 
   [[nodiscard]] uint64_t Id() const { return id_; }
@@ -105,15 +124,15 @@ class Coroutine {
   bool Acquire() { return !lock_.test_and_set(std::memory_order_acquire); }
   void Release() { return lock_.clear(std::memory_order_release); }
   CoroutineState State() { return future_.get_value(); }
-
+  bool SetState(CoroutineState state) { return future_.set_value(state); }
   void Stop() { future_.Stop(); }
   bool Done() { return future_.Done(); }
 
  private:
   std::string name_{};
   uint64_t id_ = 0;
+  CoroutineFunc fun_;
   uint32_t priority_ = 0;
-  CoroutineFunc func_;
   std::string group_name_ = "default_group_name";
   Future<CoroutineState> future_;
   std::atomic_flag lock_ = ATOMIC_FLAG_INIT;

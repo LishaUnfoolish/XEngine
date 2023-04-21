@@ -3,6 +3,8 @@
 @Contact: lixiaoxmm@163.com
 @Time: 2023/02/10
 ***************************/
+#include <chrono>
+#include <thread>
 #define CATCH_CONFIG_MAIN
 #include <atomic>
 #include <functional>
@@ -226,17 +228,16 @@ TEST_CASE("test_has_args_function_runner_benchmark") {
   for (int i = count1; i > 0; i--) {
     std::set<XEngine::NodeId> dep;
     for (int k = 0; k < count1 - i; k++) { dep.insert(k); }
-
     auto ret = builder.Emplace(dep, "测试node10", []() {
       ++test_num;
       return XEngine::RunnerStatus{XEngine::RunnerStopReason::RunnerOk};
     });
   }
 
-  int count2 = 100;
+  int count2 = 10000;
   for (int i = count2; i > 0; i--) {
-    auto ret = builder.Emplace({}, "测试node10", []() {
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+    auto ret = builder.Emplace({}, "测试node10", [s = i]() {
+      // std::this_thread::sleep_for(std::chrono::milliseconds(1));
       ++test_num;
       return XEngine::RunnerStatus{XEngine::RunnerStopReason::RunnerOk};
     });
@@ -244,12 +245,30 @@ TEST_CASE("test_has_args_function_runner_benchmark") {
 
   XEngine::Runner runner{builder};
   graph.Graphviz("test_has_args_function_runner_benchmark.svg");
-  int count3 = 2;
+  int count3 = 1000;
   test_num = 0;
   runner.Rebuild();
+  DEBUG << "start\n";
   std::chrono::time_point<std::chrono::steady_clock> start_time_ =
       std::chrono::steady_clock::now();
+  // std::thread([] {
+  //   while (true) {
+  //     int in;
+  //     // std::cin >> in;
+  //     // 测试避免cpu占满导致其它模块响应不实时
+  //     XEngine::SchedulerManager::Instance()->Submit([input = in]() {
+  //       /* std::cout << "ssssssssss:" << input << std::endl;  */
+  //     });
+  //   }
+  // }).detach();
   for (int i = count3; i > 0; i--) { runner.Run(); }
   DEBUG << std::chrono::steady_clock::now() - start_time_ << std::endl;
   REQUIRE(test_num == (count1 + count2) * count3);
+
+  /* 因为Scheduler是个单例，所以得手动释放 */
+  XEngine::SchedulerManager::Instance()->CleanUp();
+  // 0-32-100 0.038 0.0018381  0.0048762  没有没延负载 ts:0.00101707秒.
+  // 0-32-100 0.1439173 0.2176605  0.236163  milliseconds(1) ts:0.215866秒秒.
+  // 0-100-100 0.2231402 0.7521842  0.7070208  milliseconds(1) ts:0.740608秒.
+  // 0-10000-100 15.4600308 65.9998311  65.0809695 milliseconds(1) ts:65.944秒.
 }

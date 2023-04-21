@@ -16,6 +16,7 @@
 #include "scheduler/processor.hpp"
 #include "scheduler/scheduler.hpp"
 #include "scheduler/scheduler_config.hpp"
+/* 这是一个优先级调度器，优先保证高优先级的任务执行，牺牲了高并发性保证可靠性 */
 namespace XEngine {
 class SchedulerPriority : public Scheduler {
   friend Scheduler* Scheduler::Instance();
@@ -23,11 +24,6 @@ class SchedulerPriority : public Scheduler {
     auto* config = SchedulerConfig::Instance();
     if (config == nullptr) {
       ERROR << "SchedulerConfig is nullprt.\n";
-      return;
-    }
-    if (!XEngine::SchedulerConfig::AffinityCpuset(
-            pthread_self(), config->GetProcessAffinityCpuset())) {
-      ERROR << "Failed to set affinity.\n";
       return;
     }
 
@@ -45,8 +41,8 @@ class SchedulerPriority : public Scheduler {
                 ? decltype(group.attr.cpuset){}
                 : decltype(group.attr.cpuset){group.attr.cpuset[i]};
         SchedulerConfig::SetThreadAttr(
-            GroupName + std::to_string(i), proc->Thread()->native_handle(),
-            group.attr.policy, group.attr.priority, proc->Tid(), cput_set);
+            GroupName, proc->Thread()->native_handle(), group.attr.policy,
+            group.attr.priority, proc->Tid(), cput_set);
         processors_.emplace_back(proc);
       }
     }
@@ -73,7 +69,6 @@ class SchedulerPriority : public Scheduler {
       // 确保至少存在一个group
       cr->SetGroupName(task_info_map.begin()->second.GroupName);
     }
-
     /* 做防御，进程优先级最大不超过MAX_PRIO */
     if (cr->Priority() >= MAX_PRIO) {
       WARN << cr->Name() << " prio is greater than MAX_PRIO[ << " << MAX_PRIO
@@ -81,7 +76,7 @@ class SchedulerPriority : public Scheduler {
       cr->SetPriority(MAX_PRIO - 1);
     }
 
-    // Enqueue task.
+    // Submit task.
     {
       std::unique_lock<std::shared_mutex> lk(
           PriorityContext::rq_locks_[cr->GroupName()].at(cr->Priority()));
@@ -90,7 +85,16 @@ class SchedulerPriority : public Scheduler {
           .emplace_back(cr);
     }
 
-    PriorityContext::Notify(cr->GroupName());
+    PriorityContext::Notify(cr);
+    return true;
+  }
+
+ private:
+  bool NotifyProcessor(const std::shared_ptr<Coroutine>& cr) override {
+    if (stop_) [[unlikely]] {
+        return true;
+      }
+    PriorityContext::Notify(cr);
     return true;
   }
 };

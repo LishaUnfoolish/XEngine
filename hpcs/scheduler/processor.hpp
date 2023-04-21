@@ -37,21 +37,16 @@ class Processor {
   virtual ~Processor() { Stop(); }
   std::thread* Thread() { return &thread_; }
   std::atomic<pid_t>& Tid() {
-    pid_t value = -1;
-    while (!tid_.compare_exchange_weak(value, -1)) {
-      std::atomic_wait(&tid_, value);
-      value = -1;
-    }
+    while (tid_.load() == -1) { asm volatile("rep; nop" : : : "memory"); }
     return tid_;
   }
 
   void Stop() {
-    if (!running_.exchange(false)) [[unlikely]] {
-        return;
-      }
+    running_.exchange(false);
     if (context_) [[likely]] {
         context_->Shutdown();
       }
+    std::unique_lock<std::mutex> lk(mtx_ctx_);
     cv_ctx_.notify_one();
     if (thread_.joinable()) [[likely]] {
         thread_.join();

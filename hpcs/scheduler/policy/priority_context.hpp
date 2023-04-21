@@ -6,6 +6,7 @@
 @Time: 2023/04/10
 ***************************/
 #pragma once
+
 #include <array>
 #include <functional>
 #include <memory>
@@ -18,10 +19,11 @@
 #include <vector>
 
 #include "common/macros.hpp"
+#include "core/semaphor.hpp"
 #include "scheduler/croutine.hpp"
 #include "scheduler/scheduler_config.hpp"
 namespace XEngine {
-static constexpr uint32_t MAX_PRIO = 20;
+
 class PriorityContext : public Context {
  public:
   virtual ~PriorityContext() { Shutdown(); }
@@ -39,7 +41,9 @@ class PriorityContext : public Context {
   void Shutdown() override {
     stop_.store(true);
     for (int i = MAX_PRIO - 1; i >= 0; --i) {
-      std::shared_lock<std::shared_mutex> lk(lock_que_->at(i));
+      std::unique_lock<std::shared_mutex> lk(lock_que_->at(i));
+      for (const auto& cr : policy_request_que_->at(i)) { Notify(cr); }
+      sem_->Stop();
       policy_request_que_->at(i).clear();
     }
   }
@@ -47,17 +51,16 @@ class PriorityContext : public Context {
   void InitGroup(const std::string& GroupName) {
     policy_request_que_ = &cr_group_[GroupName];
     lock_que_ = &rq_locks_[GroupName];
-    condition_variable_ = &cv_wq_[GroupName];
-    {
-      std::scoped_lock lk(mtx_wq_);
-      notify_grp_[GroupName] = 0;
-      group_name_ = GroupName;
-    }
+    sem_ = &sem_wq_[GroupName];
+    { group_name_ = GroupName; }
   }
 
   std::shared_ptr<Coroutine> NextRoutine() override {
-    if (stop_.load()) { return nullptr; }
+    if (stop_.load()) [[unlikely]] {
+        return nullptr;
+      }
     for (int i = MAX_PRIO - 1; i >= 0; --i) {
+      // 每次都是最高优先级的任务先执行,如果高优先级任务一直都是READY，低优先级的任务会一直不触发
       std::shared_lock<std::shared_mutex> lk(lock_que_->at(i));
       for (auto& cr : policy_request_que_->at(i)) {
         if (!cr->Acquire()) [[unlikely]] {
@@ -72,22 +75,15 @@ class PriorityContext : public Context {
     return nullptr;
   }
 
-  static void Notify(const std::string& GroupName) {
-    {
-      std::scoped_lock lk(mtx_wq_);
-      ++notify_grp_[GroupName];
-    }
-    cv_wq_[GroupName].notify_one();
+  static void Notify(const std::shared_ptr<Coroutine>& cr) {
+    sem_wq_[cr->GroupName()].Notify();
   }
 
   void Wait() override {
-    std::unique_lock<std::mutex> lk(mtx_wq_);
-    condition_variable_->wait_for(lk, std::chrono::milliseconds(1000), [&]() {
-      return notify_grp_[group_name_] > 0;
-    });
-    if (notify_grp_[group_name_] > 0) [[likely]] {
-        notify_grp_[group_name_]--;
+    if (stop_) [[unlikely]] {
+        return;
       }
+    sem_->Wait(1000);
   }
 
   static bool RemoveCoroutine(const std::shared_ptr<Coroutine>& cr) {
@@ -118,23 +114,19 @@ class PriorityContext : public Context {
   using CoroutineGroup = std::unordered_map<std::string, PriQueue>;
   using LockQueue = std::array<std::shared_mutex, MAX_PRIO>;
   using GroupLock = std::unordered_map<std::string, LockQueue>;
-  using GroupCv = std::unordered_map<std::string, std::condition_variable>;
-  using GroupNotify = std::unordered_map<std::string, int>;
+  using GroupSem = std::unordered_map<std::string, Semaphore>;
 
   alignas(hardware_constructive_interference_size) inline static CoroutineGroup
       cr_group_;
   alignas(hardware_constructive_interference_size) inline static GroupLock
       rq_locks_;
   alignas(
-      hardware_constructive_interference_size) inline static std::mutex mtx_wq_;
-  alignas(hardware_constructive_interference_size) inline static GroupNotify
-      notify_grp_;
-  alignas(hardware_constructive_interference_size) inline static GroupCv cv_wq_;
+      hardware_constructive_interference_size) inline static GroupSem sem_wq_;
 
  private:
   PriQueue* policy_request_que_ = nullptr;
   LockQueue* lock_que_ = nullptr;
-  std::condition_variable* condition_variable_ = nullptr;
   std::string group_name_{};
+  Semaphore* sem_{};
 };
 }  // namespace XEngine

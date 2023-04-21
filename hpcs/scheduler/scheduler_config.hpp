@@ -22,11 +22,12 @@
 #include "nlohmann/json.hpp"
 #include "scheduler/scheduler.hpp"
 namespace XEngine {
-#define DEFAULT_GROUP_NAME "default_group_name"
+#define DEFAULT_GROUP_NAME "group"
+static constexpr uint32_t MAX_PRIO = 2;
 enum class SchedulingPolicy {
+  NO_FIND,
   PRIORITY,
 };
-
 enum class ThreadPolicy {
   THREAD_SCHED_OTHER = SCHED_OTHER,
   THREAD_SCHED_FIFO = SCHED_FIFO,
@@ -59,34 +60,42 @@ class SchedulerConfig {
 
   /* 自定义配置文件,初始化Scheduler之前使用 */
   bool SetConfigPath(const std::string& path) {
+    std::cout << path << std::endl;
     if (std::filesystem::exists(path)) [[likely]] {
         std::fstream file(path, std::ios::in | std::ios::binary);
         if (file.is_open()) [[likely]] {
             config_ = nlohmann::json::parse(
                 std::string(std::istreambuf_iterator<char>(file),
                             std::istreambuf_iterator<char>()));
-
             return true;
           }
       }
+    else {
+      ERROR << "Failed to parse " << path << std::endl;
+    }
     return false;
   }
   /* 获取scheduler当前的调度策略 */
-  SchedulingPolicy GetPolicy() { return SchedulingPolicy::PRIORITY; }
-
-  /* 获取线程的配置属性 */
-  std::map<std::string, ThreadAttribute> GetThreadAttr() {
-    // thread attr
-    return {};
+  SchedulingPolicy GetPolicy() {
+    constexpr std::string_view field{"SchedulingPolicy"};
+    const auto& json = config_.find(field);
+    if (json == config_.end() || !json.value().is_string()) {
+      ERROR << "Cannot find " << field << " ,used default policy.\n";
+      return SchedulingPolicy::PRIORITY;
+    }
+    static std::unordered_map<std::string, SchedulingPolicy> field_map{
+        {"PRIORITY", SchedulingPolicy::PRIORITY}};
+    if (field_map.find(json.value()) == field_map.end()) {
+      ERROR << "No find SchedulingPolicy,used default policy.\n";
+      return SchedulingPolicy::PRIORITY;
+    }
+    return field_map[json.value()];
   }
-
   /* 获取主进程的CPU亲和性设置参数 */
   std::vector<int32_t> GetProcessAffinityCpuset() {
     // Process CPU affinity
     std::vector<int32_t> cpuset{};
-    for (int i = 0; i < std::thread::hardware_concurrency(); ++i) {
-      cpuset.emplace_back(i);
-    }
+    cpuset.emplace_back(TaskPoolSize());
     return cpuset;
   }
 
@@ -94,26 +103,58 @@ class SchedulerConfig {
   std::map<std::string, CoroutineGroup> GetCoroutineGroup() {
     // thread attr
     CoroutineGroup info{};
-    for (int i = 0; i < std::thread::hardware_concurrency(); ++i) {
+    std::map<std::string, CoroutineGroup> group{};
+    for (int i = 0; i < TaskPoolSize(); ++i) {
       info.attr.cpuset.emplace_back(i);
     }
-    info.attr.policy = ThreadPolicy::THREAD_SCHED_FIFO;
-    info.attr.priority = 1;
-    info.processor_num = std::thread::hardware_concurrency();
-    return {{ProcessGroupName(), info}};
+    info.attr.policy = ThreadPolicy::THREAD_SCHED_OTHER;
+    info.attr.priority = MAX_PRIO - 1;
+    info.processor_num = TaskPoolSize();
+    group.emplace(ProcessGroupName(), std::move(info));
+
+    return group;
   }
 
   /* 获取协程任务的配置属性 */
   std::map<std::string, TaskInfo> GetTask() {
     // thread attr
-    TaskInfo task{};
-    task.GroupName = ProcessGroupName();
-    task.priority = 10;
-    return {{"test_task", task}};
+    std::map<std::string, TaskInfo> info{};
+    for (int i = 0; i < TaskPoolSize(); ++i) {
+      TaskInfo task{};
+      task.GroupName = ProcessGroupName();
+      task.priority = MAX_PRIO - 1;
+      info.emplace(task.GroupName + std::to_string(i), std::move(task));
+    }
+
+    return info;
+  }
+  /* 获取自定义线程的配置属性 */
+  std::map<std::string, ThreadAttribute> GetThreadAttr() {
+    // thread attr
+    return {};
   }
 
   /* 线程池分配的线程数 */
   int32_t TaskPoolSize() { return std::thread::hardware_concurrency(); }
+
+  /* 获取线程池配置属性 */
+  // struct ThreadAttribute {
+  //   // std::string name{};
+  //   std::vector<int32_t> cpuset{};
+  //   ThreadPolicy policy;
+  //   int32_t priority{};
+  // };
+  std::map<std::string, ThreadAttribute> GetThreadPoolAttr() {
+    std::map<std::string, ThreadAttribute> group{};
+    for (int i = 0; i < TaskPoolSize(); ++i) {
+      ThreadAttribute info{};
+      info.cpuset.emplace_back(i);
+      info.policy = ThreadPolicy::THREAD_SCHED_OTHER;
+      info.priority = MAX_PRIO - 1;
+      group.emplace(ProcessGroupName() + std::to_string(i), std::move(info));
+    }
+    return group;
+  }
 
   /* 批量设置亲和性接口 */
   static bool AffinityCpuset(const pthread_t& thread,
@@ -161,7 +202,6 @@ class SchedulerConfig {
         }
       policy_in = static_cast<int>(policy);
       param.sched_priority = priority;
-      std::cout << priority << std::endl;
       err_code = pthread_setschedparam(thread, policy_in, &param);
       if (err_code != 0) [[unlikely]] {
           // 注意需要权限运行程序才能成功,wsl不支持
@@ -176,7 +216,12 @@ class SchedulerConfig {
   static bool SetThreadAttr(const std::string& name, const pthread_t& thread,
                             const ThreadPolicy& policy, int32_t priority,
                             pid_t tid, const std::vector<int32_t>& cpus) {
-    pthread_setname_np(tid, name.c_str());
+    int err_code = pthread_setname_np(thread, name.c_str());
+    if (err_code != 0) [[unlikely]] {
+        ERROR << "Failed pthread_setname_np. errno: " << strerror(err_code)
+              << "  " << err_code << "\n";
+        return false;
+      }
     /* set affinity */
     if (!AffinityCpuset(thread, cpus)) [[unlikely]] {
         ERROR << "Failed to AffinityCpuset. \n";
@@ -187,6 +232,7 @@ class SchedulerConfig {
         ERROR << "Failed to set Policy.\n";
         return false;
       }
+
     return true;
   }
 
@@ -199,6 +245,7 @@ class SchedulerConfig {
   std::string process_group_{DEFAULT_GROUP_NAME};
 
   nlohmann::json config_{};
+
   DECLARE_SINGLETON(SchedulerConfig)
 };
 

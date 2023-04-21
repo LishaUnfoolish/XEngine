@@ -20,7 +20,8 @@ function _usage() {
 function build_opt() {
   # build all release
   #  --toolchain used clang++13
-  xmake f --toolchain=clang -c && xmake -v -w
+  # xmake f --toolchain=clang -c && xmake -v -w
+  xmake f --toolchain=clang -c && xmake
   compile_commands
 }
 function hpcs_benchmark() {
