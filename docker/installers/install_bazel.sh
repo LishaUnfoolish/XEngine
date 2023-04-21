@@ -5,8 +5,8 @@ source ${ROOT_DIR}/docker/installers/installer_base.sh
 
 set -e
 TARGET_ARCH=$(uname -m)
-BAZEL_VERSION="3.7.1"
-BUILDTOOLS_VERSION="3.5.0"
+BAZEL_VERSION="4.2.4"
+BUILDTOOLS_VERSION="4.2.2"
 
 if [[ "$TARGET_ARCH" == "x86_64" ]]; then
   # https://docs.bazel.build/versions/master/install-ubuntu.html

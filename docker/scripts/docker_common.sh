@@ -24,7 +24,7 @@ function ok() {
 }
 
 export PROJECT_NAME="xengine"
-export DOCKER_IMAGE="lixiaoxmm/xengine:v1.4_test_bazel"
+export DOCKER_IMAGE="lixiaoxmm/xengine:v1.4_test_bazel4.20"
 export USER_ID=$(id -u)
 export GRP=$(id -g -n)
 export GRP_ID=$(id -g)
