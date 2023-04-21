@@ -29,6 +29,9 @@ RUN apt-get update -yqq \
 
 COPY docker/ /docker
 COPY docker/installers/tools /tools
+RUN /docker/installers/install_bazel.sh
 RUN mkdir "/$(docker/scripts/docker_common.sh)"
 RUN rm /docker -rf
+
+
 

@@ -4,3 +4,9 @@ build
 **/compile_commands.json
 .dev_bash_hist
 *.svg
+
+# bazel
+bazel-bin
+bazel-out
+bazel-testlogs
+bazel-xengine
