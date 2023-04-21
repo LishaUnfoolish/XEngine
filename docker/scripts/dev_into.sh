@@ -5,10 +5,12 @@
 # @Time: 2022/11/20
 # @Desc: 用户进入docker环境
 # ***************************/
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd -P)"
+source ${ROOT_DIR}/docker/scripts/docker_common.sh
+
 xhost +local:root 1>/dev/null 2>&1
 docker exec \
     -u $USER \
-    -e HISTFILE=/XEngine/.dev_bash_hist \
-    -it XEngine_$USER \
+    -it ${RUN_DEV} \
     /bin/bash
 xhost -local:root 1>/dev/null 2>&1
