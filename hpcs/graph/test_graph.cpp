@@ -6,9 +6,9 @@
 #define CATCH_CONFIG_MAIN
 #include <memory>
 
-#include "common/catch.hpp"
 #include "graph/dense_graph.hpp"
 #include "graph/graph.hpp"
+#include "hpcs/common/catch.hpp"
 
 class Base {
  public:

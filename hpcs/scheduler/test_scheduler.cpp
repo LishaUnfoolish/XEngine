@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include "common/catch.hpp"
+#include "hpcs/common/catch.hpp"
 #include "scheduler/scheduler_policy.hpp"
 int sum = 3;
 std::atomic<int> count{0};

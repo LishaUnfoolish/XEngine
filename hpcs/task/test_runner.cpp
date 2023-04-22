@@ -10,11 +10,11 @@
 #include <functional>
 #include <memory>
 
-#include "common/catch.hpp"
-#include "graph/dense_graph.hpp"
-#include "graph/graph.hpp"
-#include "task/flow_builder.hpp"
-#include "task/runner.hpp"
+#include "hpcs/common/catch.hpp"
+#include "hpcs/graph/dense_graph.hpp"
+#include "hpcs/graph/graph.hpp"
+#include "hpcs/task/flow_builder.hpp"
+#include "hpcs/task/runner.hpp"
 static std::atomic<int> test_num{0};
 static std::atomic<int> sum{0};
 class BuilderTest {

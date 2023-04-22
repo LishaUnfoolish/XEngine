@@ -10,3 +10,9 @@ bazel-bin
 bazel-out
 bazel-testlogs
 bazel-xengine
+
+#global
+GPATH
+GRTAGS
+GTAGS
+gtags.files

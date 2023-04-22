@@ -11,11 +11,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common/singleton.hpp"
-#include "scheduler/policy/priority_context.hpp"
-#include "scheduler/processor.hpp"
-#include "scheduler/scheduler.hpp"
-#include "scheduler/scheduler_config.hpp"
+#include "hpcs/common/log.hpp"
+#include "hpcs/common/singleton.hpp"
+#include "hpcs/scheduler/policy/priority_context.hpp"
+#include "hpcs/scheduler/processor.hpp"
+#include "hpcs/scheduler/scheduler.hpp"
+#include "hpcs/scheduler/scheduler_config.hpp"
 /* 这是一个优先级调度器，优先保证高优先级的任务执行，牺牲了高并发性保证可靠性 */
 namespace XEngine {
 class SchedulerPriority : public Scheduler {

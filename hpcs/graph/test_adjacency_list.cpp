@@ -6,7 +6,7 @@
 #define CATCH_CONFIG_MAIN
 #include <memory>
 
-#include "common/catch.hpp"
 #include "graph/adjacency_list.hpp"
+#include "hpcs/common/catch.hpp"
 
 TEST_CASE("test_adjacency_list") {}

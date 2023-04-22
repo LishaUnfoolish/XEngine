@@ -6,8 +6,8 @@
 #define CATCH_CONFIG_MAIN
 #include <memory>
 
-#include "common/catch.hpp"
 #include "graph/matrix.hpp"
+#include "hpcs/common/catch.hpp"
 
 TEST_CASE("test_matrix") {
   XEngine::Matrix<int> test_Matrix2;

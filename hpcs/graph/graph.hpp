@@ -7,9 +7,9 @@
 #include <algorithm>
 #include <set>
 
-#include "graph/adjacency_iterator.hpp"
-#include "graph/graph_traits.hpp"
-#include "graph/graph_writer.hpp"
+#include "hpcs/graph/adjacency_iterator.hpp"
+#include "hpcs/graph/graph_traits.hpp"
+#include "hpcs/graph/graph_writer.hpp"
 namespace XEngine {
 
 template <typename Impl>

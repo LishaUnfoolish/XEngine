@@ -5,4 +5,4 @@
 @Time: 2023/04/10
 ***************************/
 #define CATCH_CONFIG_MAIN
-#include "common/catch.hpp"
+#include "hpcs/common/catch.hpp"

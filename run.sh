@@ -5,7 +5,7 @@
 # @Time: 2022/11/20
 # @Desc: 编译运行脚本
 # ***************************/
-
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd -P )"
 function _usage() {
   echo -e "\n${RED}Usage${NO_COLOR}:
     .${BOLD}/run.sh${NO_COLOR} [OPTION]"
@@ -29,6 +29,7 @@ function hpcs_benchmark() {
 }
 
 function compile_commands() {
+  ${ROOT_DIR}/scripts/gtage.sh
   xmake project -k compile_commands
 }
 function unit_test() {

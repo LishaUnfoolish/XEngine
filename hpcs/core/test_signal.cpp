@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "common/catch.hpp"
 #include "core/signal.hpp"
+#include "hpcs/common/catch.hpp"
 class MyInt {
  public:
   template <typename T>

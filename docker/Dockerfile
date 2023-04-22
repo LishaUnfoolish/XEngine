@@ -25,7 +25,8 @@ RUN apt-get update -yqq \
   gnutls-bin \
   lsb-release \
   llvm \
-  clang
+  clang \
+  global
 
 COPY docker/ /docker
 COPY docker/installers/tools /tools

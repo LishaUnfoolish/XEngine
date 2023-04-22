@@ -22,10 +22,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common/macros.hpp"
-#include "graph/breadth_first_iterator.hpp"
-#include "task/flow_builder.hpp"
-#include "task/task.hpp"
+#include "hpcs/common/macros.hpp"
+#include "hpcs/graph/breadth_first_iterator.hpp"
+#include "hpcs/task/flow_builder.hpp"
+#include "hpcs/task/task.hpp"
 
 namespace XEngine {
 

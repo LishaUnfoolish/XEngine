@@ -9,8 +9,8 @@
 #include <set>
 #include <type_traits>
 
-#include "graph/graph.hpp"
-#include "graph/topology_sort.hpp"
+#include "hpcs/graph/graph.hpp"
+#include "hpcs/graph/topology_sort.hpp"
 
 namespace XEngine {
 template <typename Graph>
