@@ -2,7 +2,7 @@
 
 /***************************
 @Author: Xhosa-LEE
-@Contact: lixiaoxmm@163.com
+@Contact: lixiaoxmm@gmail.com
 @Time: 2023/04/10
 ***************************/
 #pragma once

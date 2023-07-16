@@ -1,7 +1,7 @@
 
 /***************************
 @Author: Xhosa-LEE
-@Contact: lixiaoxmm@163.com
+@Contact: lixiaoxmm@gmail.com
 @Time: 2022/12/05
 @Desc: type list模板接口
 ***************************/

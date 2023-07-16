@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # /***************************
 # @Author: Xhosa-LEE
-# @Contact: lixiaoxmm@163.com
+# @Contact: lixiaoxmm@gmail.com
 # @Time: 2022/11/20
 # @Desc: 部署docker环境时添加使用者的用户环境
 # ***************************/

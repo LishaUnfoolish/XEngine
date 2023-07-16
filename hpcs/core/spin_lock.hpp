@@ -1,6 +1,6 @@
 /***************************
 @Author: Xhosa-LEE
-@Contact: lixiaoxmm@163.com
+@Contact: lixiaoxmm@gmail.com
 @Time: 2022/11/22
 @Desc: 信号与槽接口
 ***************************/

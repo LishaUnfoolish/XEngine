@@ -1,6 +1,6 @@
 /***************************
 @Author: Xhosa-LEE
-@Contact: lixiaoxmm@163.com
+@Contact: lixiaoxmm@gmail.com
 @Time: 2023/01/10
 @Desc: graph模板接口
 ***************************/
