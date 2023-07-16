@@ -6,10 +6,10 @@
 #define CATCH_CONFIG_MAIN
 #include <memory>
 
-#include "graph/dense_graph.hpp"
-#include "graph/graph.hpp"
 #include "hpcs/common/catch.hpp"
-#include "task/flow_builder.hpp"
+#include "hpcs/graph/dense_graph.hpp"
+#include "hpcs/graph/graph.hpp"
+#include "hpcs/task/flow_builder.hpp"
 class BuilderTest {
  public:
   BuilderTest() = default;

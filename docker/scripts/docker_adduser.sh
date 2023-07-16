@@ -11,7 +11,6 @@ usermod -aG sudo "$DOCKER_USER"
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 echo '
 ulimit -c unlimited
-source ~/.xmake/profile
 ' >> "/home/${DOCKER_USER}/.bashrc"
 
 echo '

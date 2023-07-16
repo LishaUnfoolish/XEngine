@@ -1,18 +1,18 @@
 #### XEngine [Chinese](https://github.com/LishaUnfoolish/XEngine/blob/master/README.md)|[English](https://github.com/LishaUnfoolish/XEngine/blob/master/README_en.md)
-###XEngine is a general framework designed to be used as a toy at home. 
+###XEngine is a general framework designed to be used as a toy at home.
 
 
 ###Note:
-  This project provides a docker environment for convenient testing and usage, and can also run directly on Ubuntu by installing xmake and clang15+.
-  
+  This project provides a docker environment for convenient testing and usage, and can also run directly on Ubuntu by installing bazel and clang15+.
+
 ###build:
-There is a build and run process: 
+There is a build and run process:
 1. use ./docker/scripts/dev_start.sh start to start and pull the Docker images;
-2. enter the Docker environment with ./docker/scripts/dev_into.sh; 
-3. compile inside Docker with ./run.sh build_opt; 
+2. enter the Docker environment with ./docker/scripts/dev_into.sh;
+3. compile inside Docker with ./run.sh build_opt;
 
 ###run:
-4. run unit tests with ./run.sh run_unit_test. 
+4. run unit tests with ./run.sh run_unit_test.
 
 #If you would like to create your own docker image, you can use the [docker image creation tool](https://github.com/LishaUnfoolish/XEngine_docker_tools) to create your own docker. After that, you can modify the DEV="lixiaoxmm/xengine:v1.3.xmake_1668767811" in the script ./docker/scripts/dev_start.sh to your source.
 

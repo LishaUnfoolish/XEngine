@@ -17,10 +17,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common/singleton.hpp"
-#include "croutine.hpp"
-#include "nlohmann/json.hpp"
-#include "scheduler/scheduler.hpp"
+#include "hpcs/common/log.hpp"
+#include "hpcs/common/singleton.hpp"
+#include "hpcs/scheduler/croutine.hpp"
+#include "hpcs/scheduler/scheduler.hpp"
+#include "third_party/nlohmann/json.hpp"
 namespace XEngine {
 #define DEFAULT_GROUP_NAME "group"
 static constexpr uint32_t MAX_PRIO = 2;
@@ -71,7 +72,7 @@ class SchedulerConfig {
           }
       }
     else {
-      ERROR << "Failed to parse " << path << std::endl;
+      XERROR << "Failed to parse " << path << std::endl;
     }
     return false;
   }
@@ -80,13 +81,13 @@ class SchedulerConfig {
     constexpr std::string_view field{"SchedulingPolicy"};
     const auto& json = config_.find(field);
     if (json == config_.end() || !json.value().is_string()) {
-      ERROR << "Cannot find " << field << " ,used default policy.\n";
+      XERROR << "Cannot find " << field << " ,used default policy.\n";
       return SchedulingPolicy::PRIORITY;
     }
     static std::unordered_map<std::string, SchedulingPolicy> field_map{
         {"PRIORITY", SchedulingPolicy::PRIORITY}};
     if (field_map.find(json.value()) == field_map.end()) {
-      ERROR << "No find SchedulingPolicy,used default policy.\n";
+      XERROR << "No find SchedulingPolicy,used default policy.\n";
       return SchedulingPolicy::PRIORITY;
     }
     return field_map[json.value()];
@@ -166,7 +167,7 @@ class SchedulerConfig {
     if (sched_getaffinity(getpid(), sizeof(available_cpus), &available_cpus) ==
         -1)
       [[unlikely]] {
-        ERROR << "Failed to get affinity:\n";
+        XERROR << "Failed to get affinity:\n";
         return false;
       }
     int num_cpus = sysconf(_SC_NPROCESSORS_CONF);
@@ -179,7 +180,7 @@ class SchedulerConfig {
       CPU_SET(cpu, &set);
       int err_code = pthread_setaffinity_np(thread, sizeof(set), &set);
       if (err_code != 0) [[unlikely]] {
-          ERROR << "Failed to set thread. errno:" << strerror(err_code) << "\n";
+          XERROR << "Failed to set thread. errno:" << strerror(err_code) << "\n";
           return false;
         }
     }
@@ -196,7 +197,7 @@ class SchedulerConfig {
       struct sched_param param {};
       int err_code = pthread_getschedparam(thread, &policy_in, &param);
       if (err_code != 0) [[unlikely]] {
-          ERROR << "Failed to get schedparam. errno: " << strerror(err_code)
+          XERROR << "Failed to get schedparam. errno: " << strerror(err_code)
                 << "\n";
           return false;
         }
@@ -205,7 +206,7 @@ class SchedulerConfig {
       err_code = pthread_setschedparam(thread, policy_in, &param);
       if (err_code != 0) [[unlikely]] {
           // 注意需要权限运行程序才能成功,wsl不支持
-          ERROR << "Failed to set thread. errno: " << strerror(err_code)
+          XERROR << "Failed to set thread. errno: " << strerror(err_code)
                 << "\n";
           return false;
         }
@@ -218,18 +219,18 @@ class SchedulerConfig {
                             pid_t tid, const std::vector<int32_t>& cpus) {
     int err_code = pthread_setname_np(thread, name.c_str());
     if (err_code != 0) [[unlikely]] {
-        ERROR << "Failed pthread_setname_np. errno: " << strerror(err_code)
+        XERROR << "Failed pthread_setname_np. errno: " << strerror(err_code)
               << "  " << err_code << "\n";
         return false;
       }
     /* set affinity */
     if (!AffinityCpuset(thread, cpus)) [[unlikely]] {
-        ERROR << "Failed to AffinityCpuset. \n";
+        XERROR << "Failed to AffinityCpuset. \n";
         return false;
       }
     /* set policy*/
     if (!SetSchedPolicy(thread, policy, priority, tid)) [[unlikely]] {
-        ERROR << "Failed to set Policy.\n";
+        XERROR << "Failed to set Policy.\n";
         return false;
       }
 

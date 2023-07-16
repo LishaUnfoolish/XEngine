@@ -9,11 +9,10 @@
 #include <memory>
 #include <utility>
 
-#include "common/singleton.hpp"
-#include "concurrencpp/concurrencpp.h"
-#include "scheduler/scheduler_policy.hpp"
+#include "hpcs/common/singleton.hpp"
+#include "hpcs/scheduler/scheduler_policy.hpp"
 namespace XEngine {
-#define USE_SCHEDULER
+#define USE_STD_ASYNC
 #ifdef USE_STD_ASYNC
 template <typename F, typename... Args>
 [[nodiscard]] static constexpr auto Async(F&& f, Args&&... args)
@@ -24,39 +23,6 @@ template <typename F, typename... Args>
 inline constexpr auto ReadyValue = std::future_status::ready;
 template <typename T>
 using RunnerFutureType = std::future<T>;
-#endif
-
-#ifdef USE_CONCUTTENCPP
-
-/* worker_thread_executor */
-// template <typename F, typename... Args>
-// [[nodiscard]] static constexpr auto Async(F&& f, Args&&... args)
-//     -> concurrencpp::result<std::invoke_result_t<F, Args...>> {
-//   return Singleton<concurrencpp::worker_thread_executor>::Instance()->submit(
-//       std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-// }
-
-/* thread_pool_executor */
-struct Executor {
- public:
-  Executor()
-      : e("xengine_pool", std::thread::hardware_concurrency(),
-          std::chrono::seconds(10)) {}
-  concurrencpp::thread_pool_executor e;
-};
-
-template <typename F, typename... Args>
-[[nodiscard]] static constexpr auto Async(F&& f, Args&&... args)
-    -> concurrencpp::result<std::invoke_result_t<F, Args...>> {
-  return Singleton<Executor>::Instance()->e.submit(
-      std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-}
-
-inline constexpr auto ReadyValue = concurrencpp::result_status::value;
-
-template <typename T>
-using RunnerFutureType = concurrencpp::result<T>;
-
 #endif
 
 #ifdef USE_SCHEDULER

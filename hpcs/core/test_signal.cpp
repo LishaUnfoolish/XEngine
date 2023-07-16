@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "core/signal.hpp"
 #include "hpcs/common/catch.hpp"
+#include "hpcs/core/signal.hpp"
 class MyInt {
  public:
   template <typename T>
@@ -36,7 +36,7 @@ struct hash<MyInt> {
 }  // namespace std
 
 TEST_CASE("test_slot") {
-  std::uint32_t sum = 0;
+  [[maybe_unused]] std::uint32_t sum = 0;
   std::uint32_t lhs = 1, rhs = 2;
   XEngine::Slot<bool(std::uint32_t, std::uint32_t)> slot_a(
       [&sum](std::uint32_t lhs, std::uint32_t rhs) -> bool {
@@ -48,12 +48,12 @@ TEST_CASE("test_slot") {
   REQUIRE(sum == lhs + rhs);
 
   XEngine::Slot<void(std::uint32_t, std::uint32_t)> slot_b(
-      [&sum](std::uint32_t lhs, std::uint32_t rhs) -> void {});
+      [](std::uint32_t lhs, std::uint32_t rhs) -> void {});
   slot_b.connected();
   REQUIRE(std::is_same<void, decltype(slot_b(lhs, rhs))>::value);
 
   XEngine::Slot<std::string(std::uint32_t, std::uint32_t)> slot_c(
-      [&sum](std::uint32_t lhs, std::uint32_t rhs) -> std::string {
+      [](std::uint32_t lhs, std::uint32_t rhs) -> std::string {
         return std::to_string(lhs) + std::to_string(rhs);
       });
   slot_c.connected();
@@ -81,7 +81,7 @@ TEST_CASE("test_signal") {
 
   step = 0;
   sig.Connect(
-      [&step](std::uint32_t lhs, std::uint32_t rhs) -> bool { return false; });
+      [](std::uint32_t lhs, std::uint32_t rhs) -> bool { return false; });
   sig.Connect([&step](std::uint32_t lhs, std::uint32_t rhs) -> bool {
     ++step;
     return true;

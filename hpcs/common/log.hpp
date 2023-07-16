@@ -24,32 +24,28 @@ namespace XEngine {
 #define FILE_INFO __FILE__ << ":" << __LINE__ << " "
 #define DEBUG_MODULE(module)                                          \
   std::cout << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO \
-            << "[DEBUG] "
+            << "[XDEBUG] "
 
 // #define DEBUG_MODULE(module) std::ofstream{}
-#define DEBUG DEBUG_MODULE(MODULE_NAME)
-#define INFO LOG_MODULE(MODULE_NAME, INFO)
-#define WARN LOG_MODULE(MODULE_NAME, WARN)
-#define ERROR LOG_MODULE(MODULE_NAME, ERROR)
-#define FATAL LOG_MODULE(MODULE_NAME, FATAL)
+#define XDEBUG DEBUG_MODULE(MODULE_NAME)
+#define XINFO LOG_MODULE(MODULE_NAME, XINFO)
+#define XWARN LOG_MODULE(MODULE_NAME, XWARN)
+#define XERROR LOG_MODULE(MODULE_NAME, XERROR)
+#define XFATAL LOG_MODULE(MODULE_NAME, XFATAL)
 
-#ifndef LOG_MODULE_STREAM
 #define LOG_MODULE_STREAM(log_severity) LOG_MODULE_STREAM_##log_severity
-#endif
 
-#ifndef LOG_MODULE
 #define LOG_MODULE(module, log_severity) LOG_MODULE_STREAM(log_severity)(module)
-#endif
 
-#define LOG_MODULE_STREAM_INFO(module) \
+#define LOG_MODULE_STREAM_XINFO(module) \
   (std::cout) << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO
 
-#define LOG_MODULE_STREAM_WARN(module) \
+#define LOG_MODULE_STREAM_XWARN(module) \
   (std::cout) << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO
 
-#define LOG_MODULE_STREAM_ERROR(module) \
+#define LOG_MODULE_STREAM_XERROR(module) \
   (std::cout) << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO
 
-#define LOG_MODULE_STREAM_FATAL(module) \
+#define LOG_MODULE_STREAM_XFATAL(module) \
   (std::cout) << LEFT_BRACKET << (module) << RIGHT_BRACKET << FILE_INFO
 }  // namespace XEngine

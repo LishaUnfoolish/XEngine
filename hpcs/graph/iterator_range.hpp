@@ -32,12 +32,10 @@ class IteratorRange {
     first_ = first;
     last_ = last;
   }
-  [[nodiscard]] constexpr bool operator==(
-      const IteratorRange& rhs) const noexcept {
+  constexpr bool operator==(const IteratorRange& rhs) const noexcept {
     return first_ == rhs.first_ && last_ == rhs.last_;
   }
-  [[nodiscard]] constexpr bool operator!=(
-      const IteratorRange& rhs) const noexcept {
+  constexpr bool operator!=(const IteratorRange& rhs) const noexcept {
     return first_ != rhs.first_ || last_ != rhs.last_;
   }
   // 索引运算符
@@ -53,12 +51,12 @@ class IteratorRange {
   [[nodiscard]] constexpr auto Size() const noexcept {
     return std::distance(first_, last_);
   }
-  [[nodiscard]] constexpr Iterator& operator++() { return ++first_; }
+  constexpr Iterator& operator++() { return ++first_; }
   constexpr void Advance(const DifferenceType& distance) {
     std::advance(first_, distance);
   }
-  [[nodiscard]] constexpr decltype(auto) operator*() { return *first_; }
-  [[nodiscard]] constexpr decltype(auto) operator*() const { return *first_; }
+  constexpr decltype(auto) operator*() { return *first_; }
+  constexpr decltype(auto) operator*() const { return *first_; }
   [[nodiscard]] constexpr bool Empty() const { return first_ == last_; }
   [[nodiscard]] constexpr auto Count(const ValueType& value) const {
     return std::count(first_, last_, value);

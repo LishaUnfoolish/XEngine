@@ -98,8 +98,8 @@ using CoroutineFunc = std::function<XEngine::Future<XEngine::CoroutineState>()>;
 class Coroutine {
  public:
   Coroutine() = default;
-  Coroutine(CoroutineFunc fn)
-      : fun_(std::move(fn)), future_(std::move(fun_())) {}
+  explicit Coroutine(const CoroutineFunc& fn)
+      : fun_(std::move(fn)), future_(fun_()) {}
   virtual ~Coroutine() {
     Acquire();
     Stop();

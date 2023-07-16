@@ -14,10 +14,11 @@
 #include <type_traits>
 #include <vector>
 
-#include "common/macros.hpp"
-#include "graph/breadth_first_iterator.hpp"
-#include "graph/graph_traits.hpp"
-#include "traits/pointer_traits.hpp"
+#include "hpcs/common/log.hpp"
+#include "hpcs/common/macros.hpp"
+#include "hpcs/graph/breadth_first_iterator.hpp"
+#include "hpcs/graph/graph_traits.hpp"
+#include "hpcs/traits/pointer_traits.hpp"
 namespace XEngine {
 
 /* Name traits */
@@ -146,7 +147,7 @@ constexpr void WriteGraph(const std::string& file_name, const GraphType& graph,
     file_out.open(file_name, std::ios::trunc);
     file_out << output.str();
   } else {
-    INFO << output.str();
+    XINFO << output.str();
   }
 }
 

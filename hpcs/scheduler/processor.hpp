@@ -11,9 +11,9 @@
 #include <mutex>
 #include <thread>
 
-#include "common/log.hpp"
-#include "scheduler/croutine.hpp"
-#include "scheduler/processor.hpp"
+#include "hpcs/common/log.hpp"
+#include "hpcs/scheduler/croutine.hpp"
+#include "hpcs/scheduler/processor.hpp"
 namespace XEngine {
 
 class Context {

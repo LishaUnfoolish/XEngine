@@ -1,0 +1,17 @@
+# Clang 15.0.7
+# https://cloud.tencent.com/developer/ask/sof/106690780
+build:clang15 --cxxopt=-std=c++2b
+build:clang15 --cxxopt=-O2
+build:clang15 --compiler=clang
+build:clang15 --incompatible_enable_cc_toolchain_resolution
+build:clang15 --cxxopt=-mwaitpkg
+build:clang15 --action_env=CC=/usr/bin/clang
+build:clang15 --action_env=CXX=/usr/bin/clang
+
+
+
+build --crosstool_top=//toolchain:cc_toolchain_suite
+build --cpu=ipc
+# gcc and clang flag
+build:gcc --compiler=gcc
+build:clang --compiler=clang

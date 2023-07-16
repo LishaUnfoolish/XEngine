@@ -68,7 +68,7 @@ struct TypeListIndex<Type, TypeList<>> {
 };
 
 template <typename Type, typename List>
-inline constexpr std::size_t type_list_index_v =
+inline constexpr std::size_t TypeListIndex_v =
     TypeListIndex<Type, List>::value;
 
 template <typename...>

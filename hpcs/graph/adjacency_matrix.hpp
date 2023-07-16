@@ -8,8 +8,8 @@
 #include <type_traits>
 #include <vector>
 
-#include "common/macros.hpp"
-#include "core/signal.hpp"
+#include "hpcs/common/macros.hpp"
+#include "hpcs/core/signal.hpp"
 namespace XEngine {
 template <typename Matrix, typename Node>
 class AdjacencyMatrix {
@@ -28,8 +28,8 @@ class AdjacencyMatrix {
   using NodeType = Node;
   using EdgeType =
       std::decay_t<decltype(*std::declval<Matrix>().Row(0).begin())>;
-  constexpr void Reserve(
-      const std::uint32_t& node_count) noexcept {
+  virtual ~AdjacencyMatrix() = default;
+  constexpr void Reserve(const std::uint32_t& node_count) noexcept {
     if constexpr (!std::is_void_v<Node>) {
       adjacency_matrix_.Reserve(node_count, node_count);
       nodes.reserve(node_count);
@@ -61,7 +61,7 @@ class AdjacencyMatrix {
     return nodes.at(index);
   }
 
-  [[nodiscard]] constexpr auto OutEdges(const NodeId& index) noexcept {
+  constexpr auto OutEdges(const NodeId& index) noexcept {
     // The outgoing edge of the node
     return adjacency_matrix_.Row(index);
   }

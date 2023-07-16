@@ -88,26 +88,26 @@ class Runner {
   [[nodiscard]] constexpr bool Rebuild() noexcept {
     Stop();
     if (!running_.test_and_set(std::memory_order_acquire)) [[likely]] {
-        const auto& vec = builder_.Linearize();
-        [[unlikely]] if (!vec.has_value()) {
-          Stop();
-          return false;
-        }
-        /* 统计相邻节点依赖关系 */
-        dep_table_.resize(vec.value().size(), NodeIdNone);
-        for (int i = 0; i < vec.value().size(); i++) {
-          /* 反向遍历,找到临近依赖节点 */
-          for (int f_i = i - 1; f_i >= 0; f_i--) {
-            /* 判断是有边 */
-            if (builder_.WorkFlows().HasEdge(vec.value()[f_i], vec.value()[i]))
+      const auto& vec = builder_.Linearize();
+      [[unlikely]] if (!vec.has_value()) {
+        Stop();
+        return false;
+      }
+      /* 统计相邻节点依赖关系 */
+      dep_table_.resize(vec.value().size(), NodeIdNone);
+      for (int i = 0; i < vec.value().size(); i++) {
+        /* 反向遍历,找到临近依赖节点 */
+        for (int f_i = i - 1; f_i >= 0; f_i--) {
+          /* 判断是有边 */
+          if (builder_.WorkFlows().HasEdge(vec.value()[f_i], vec.value()[i]))
               [[likely]] {
-                dep_table_[vec.value()[i]] = vec.value()[f_i];
-                break;
-              }
+            dep_table_[vec.value()[i]] = vec.value()[f_i];
+            break;
           }
         }
-        work_flows_.assign(vec.value().begin(), vec.value().end());
       }
+      work_flows_.assign(vec.value().begin(), vec.value().end());
+    }
     return true;
   }
 
@@ -115,31 +115,22 @@ class Runner {
   template <typename RetType = RunnerStatus, typename... Args>
   [[nodiscard]] constexpr std::optional<RetType> Run(Args&&... args) {
     uint32_t finish_count = work_flows_.size();
-    std::pmr::monotonic_buffer_resource mr{
-        (sizeof(std::pair<NodeIdType, RunnerFutureType<RetType>>) +
-         (sizeof(NodeIdType) * 2)) *
-        finish_count};
-    std::vector<NodeIdType, std::pmr::polymorphic_allocator<NodeIdType>> finish(
-        finish_count, 0);
-    std::list<NodeIdType, std::pmr::polymorphic_allocator<NodeIdType>>
-        work_flows(&mr);
+
+    std::vector<NodeIdType> finish(finish_count, 0);
+    std::list<NodeIdType> work_flows;
     work_flows.assign(work_flows_.begin(), work_flows_.end());
-    std::list<std::pair<NodeIdType, RunnerFutureType<RetType>>,
-              std::pmr::polymorphic_allocator<
-                  std::pair<NodeIdType, RunnerFutureType<RetType>>>>
-        future_list(&mr);
+    std::list<std::pair<NodeIdType, RunnerFutureType<RetType>>> future_list;
     while (finish_count > 0 && running_.test(std::memory_order_acquire)) {
       for (auto it = work_flows.begin(); it != work_flows.end();) {
         NodeIdType dep_id = dep_table_[*it];
         if (dep_id == NodeIdNone || finish[dep_id] != 0) [[likely]] {
-            future_list.emplace_back(
-                *it,
-                std::move(Async(&Runner<BuilderType>::Execl<RetType, Args...>,
-                                this, &(builder_.WorkFlows().GetNode(*it)),
-                                std::forward<Args>(args)...)));
-            it = work_flows.erase(it);
-          }
-        else {
+          future_list.emplace_back(
+              *it,
+              std::move(Async(&Runner<BuilderType>::Execl<RetType, Args...>,
+                              this, &(builder_.WorkFlows().GetNode(*it)),
+                              std::forward<Args>(args)...)));
+          it = work_flows.erase(it);
+        } else {
           ++it;
         }
       }
@@ -149,15 +140,14 @@ class Runner {
                        ReadyValue) {
           auto ret = pair->second.get();
           [[unlikely]] if (!ret) {
-            ERROR << "Failed runner by:" << pair->first;
+            XERROR << "Failed runner by:" << pair->first;
             Stop();
             return ret;
           }
           --finish_count;
           finish[pair->first] = 1;
           pair = future_list.erase(pair);
-        }
-        else {
+        } else {
           ++pair;
         }
       }
@@ -166,19 +156,21 @@ class Runner {
   }
 
   template <typename RetType, typename... Args>
-  [[nodiscard]] constexpr RetType Execl(
-      std::function<NodeType>* node_data,
-      Args&&... args) requires(std::is_function_v<NodeType>) {
+  [[nodiscard]] constexpr RetType Execl(std::function<NodeType>* node_data,
+                                        Args&&... args)
+    requires(std::is_function_v<NodeType>)
+  {
     return (*node_data)(std::forward<Args>(args)...);
   }
 
   template <typename RetType>
-  [[nodiscard]] constexpr RetType Execl(NodeType* node_data) requires(
-      !std::is_function_v<NodeType>) {
+  [[nodiscard]] constexpr RetType Execl(NodeType* node_data)
+    requires(!std::is_function_v<NodeType>)
+  {
     // if constexpr (HasMemberName<NodeType> ||
     //               CheckSmartPointerHasName<NodeType> ||
     //               CheckPointerHasName<NodeType>) {
-    //   DEBUG << node_data->Name() << std::endl;
+    //   XDEBUG << node_data->Name() << std::endl;
     // }
     static_assert(HasMemberRun<NodeType>);
     static_assert(HasRetMemberRun<NodeType, RetType>);
@@ -195,9 +187,9 @@ class Runner {
   CheckLimits() noexcept {
     [[likely]] if (time_limit_.has_value()) [[likely]] {
       const auto& elapsed = std::chrono::steady_clock::now() - start_time_;
-      INFO << "run time :" << elapsed << std::endl;
+      XINFO << "run time :" << elapsed << std::endl;
       [[unlikely]] if (elapsed > time_limit_.value()) [[unlikely]] {
-        ERROR << "Time limit :" << elapsed << std::endl;
+        XERROR << "Time limit :" << elapsed << std::endl;
         return RunnerStopReason::RunnerTimeLimit;
       }
     }

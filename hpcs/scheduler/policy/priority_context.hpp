@@ -11,17 +11,17 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <scheduler/processor.hpp>
 #include <shared_mutex>
 #include <string>
 #include <thread>
 #include <unordered_map>
 #include <vector>
 
-#include "common/macros.hpp"
-#include "core/semaphor.hpp"
-#include "scheduler/croutine.hpp"
-#include "scheduler/scheduler_config.hpp"
+#include "hpcs/common/macros.hpp"
+#include "hpcs/core/semaphor.hpp"
+#include "hpcs/scheduler/croutine.hpp"
+#include "hpcs/scheduler/processor.hpp"
+#include "hpcs/scheduler/scheduler_config.hpp"
 namespace XEngine {
 
 class PriorityContext : public Context {

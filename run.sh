@@ -5,12 +5,13 @@
 # @Time: 2022/11/20
 # @Desc: 编译运行脚本
 # ***************************/
-ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/" && pwd -P )"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/" && pwd -P)"
 function _usage() {
   echo -e "\n${RED}Usage${NO_COLOR}:
     .${BOLD}/run.sh${NO_COLOR} [OPTION]"
   echo -e "\n${RED}Options${NO_COLOR}:
     ${BLUE}build_opt [module]${NO_COLOR}: run optimized build.
+    ${BLUE}build_dbg [module]${NO_COLOR}: run bdg build.
     ${BLUE}hpcs_benchmark${NO_COLOR}: run hpcs_benchmark
     ${BLUE}compile_commands${NO_COLOR}: run compile_commands
     ${BLUE}run_unit_test${NO_COLOR}: run unit_test
@@ -19,18 +20,20 @@ function _usage() {
 
 function build_opt() {
   # build all release
-  #  --toolchain used clang++13
-  # xmake f --toolchain=clang -c && xmake -v -w
-  xmake f --toolchain=clang -c && xmake
-  compile_commands
+  bazel build --config=clang ... --jobs=$(($(nproc) - 2)) -c opt
 }
+
+function build_dbg() {
+  bazel build --config=clang ... --jobs=$(($(nproc) - 2)) -c dbg
+}
+
 function hpcs_benchmark() {
   xmake run hpcs_benchmark
 }
 
 function compile_commands() {
   ${ROOT_DIR}/scripts/gtage.sh
-  xmake project -k compile_commands
+  # xmake project -k compile_commands
 }
 function unit_test() {
   target=(
@@ -55,6 +58,9 @@ function main() {
   case "${cmd}" in
   build_opt)
     build_opt "$@"
+    ;;
+  build_dbg)
+    build_dbg "$@"
     ;;
   hpcs_benchmark)
     hpcs_benchmark "$@"

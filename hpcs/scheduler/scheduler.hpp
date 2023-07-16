@@ -16,9 +16,9 @@
 #include <thread>
 #include <vector>
 
-#include "scheduler/croutine.hpp"
-#include "scheduler/processor.hpp"
-#include "scheduler/scheduler_config.hpp"
+#include "hpcs/scheduler/croutine.hpp"
+#include "hpcs/scheduler/processor.hpp"
+#include "hpcs/scheduler/scheduler_config.hpp"
 namespace XEngine {
 
 class Scheduler {

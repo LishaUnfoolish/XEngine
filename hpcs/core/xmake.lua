@@ -1,5 +1,0 @@
-target("test_signal")
-    add_cxxflags("-stdlib=libc++ ", {tools = "clang++"})
-    set_kind("binary")
-    add_files("test_signal.cpp")
-    add_includedirs("../..")

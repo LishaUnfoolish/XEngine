@@ -6,12 +6,13 @@
 #define CATCH_CONFIG_MAIN
 #include <memory>
 
-#include "graph/dense_graph.hpp"
-#include "graph/graph.hpp"
 #include "hpcs/common/catch.hpp"
+#include "hpcs/graph/dense_graph.hpp"
+#include "hpcs/graph/graph.hpp"
 
 class Base {
  public:
+  virtual ~Base() = default;
   virtual std::string Name() { return "Base"; }
 };
 class Data : public Base {

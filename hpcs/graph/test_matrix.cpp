@@ -6,7 +6,7 @@
 #define CATCH_CONFIG_MAIN
 #include <memory>
 
-#include "graph/matrix.hpp"
+ #include "hpcs/graph/matrix.hpp"
 #include "hpcs/common/catch.hpp"
 
 TEST_CASE("test_matrix") {

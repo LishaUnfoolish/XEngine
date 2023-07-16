@@ -24,14 +24,13 @@ class SchedulerPriority : public Scheduler {
   SchedulerPriority() {
     auto* config = SchedulerConfig::Instance();
     if (config == nullptr) {
-      ERROR << "SchedulerConfig is nullprt.\n";
+      XERROR << "SchedulerConfig is nullprt.\n";
       return;
     }
 
     const auto& group_map = config->GetCoroutineGroup();
     for (const auto& [GroupName, group] : group_map) {
       auto proc_num = group.processor_num;
-      uint32_t processor_prio = group.attr.priority;
       for (uint32_t i = 0; i < proc_num; i++) {
         auto ctx = std::make_shared<PriorityContext>(GroupName);
         auto proc = std::make_shared<Processor>();
@@ -53,7 +52,7 @@ class SchedulerPriority : public Scheduler {
   bool CreateTask(const std::shared_ptr<Coroutine>& cr) override {
     auto* config = SchedulerConfig::Instance();
     if (config == nullptr) {
-      ERROR << "SchedulerConfig is nullprt.\n";
+      XERROR << "SchedulerConfig is nullprt.\n";
       return false;
     }
     /*
@@ -72,7 +71,7 @@ class SchedulerPriority : public Scheduler {
     }
     /* 做防御，进程优先级最大不超过MAX_PRIO */
     if (cr->Priority() >= MAX_PRIO) {
-      WARN << cr->Name() << " prio is greater than MAX_PRIO[ << " << MAX_PRIO
+      XWARN << cr->Name() << " prio is greater than MAX_PRIO[ << " << MAX_PRIO
            << "].";
       cr->SetPriority(MAX_PRIO - 1);
     }

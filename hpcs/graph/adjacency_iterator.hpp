@@ -4,10 +4,10 @@
 @Time: 2023/02/29
 ***************************/
 #pragma once
-#include <assert.h>
+#include <cassert>
 
-#include "common/macros.hpp"
-#include "graph/graph_traits.hpp"
+#include "hpcs/common/macros.hpp"
+#include "hpcs/graph/graph_traits.hpp"
 namespace XEngine {
 template <typename Graph>
 class AdjacencyIterator {

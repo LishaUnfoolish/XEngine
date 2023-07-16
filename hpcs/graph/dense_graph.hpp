@@ -9,9 +9,9 @@
 #include <concepts>
 #include <functional>
 
-#include "graph/adjacency_matrix.hpp"
-#include "graph/graph_traits.hpp"
-#include "graph/matrix.hpp"
+#include "hpcs/graph/adjacency_matrix.hpp"
+#include "hpcs/graph/graph_traits.hpp"
+#include "hpcs/graph/matrix.hpp"
 namespace XEngine {
 template <typename Edge, typename Node = void>
 class DenseGraph : public AdjacencyMatrix<Matrix<Edge>, Node> {
@@ -19,9 +19,8 @@ class DenseGraph : public AdjacencyMatrix<Matrix<Edge>, Node> {
   using BaseT = AdjacencyMatrix<Matrix<Edge>, Node>;
   using NodeType = Node;
   using EdgeIterator = typename GraphTraits<BaseT>::EdgeIterator;
-
-  constexpr void Reserve(
-      const std::uint32_t& node_count) noexcept {
+  virtual ~DenseGraph() noexcept = default;
+  constexpr void Reserve(const std::uint32_t& node_count) noexcept {
     return BaseT::Reserve(node_count);
   }
   template <typename T>
@@ -64,8 +63,8 @@ class DenseGraph : public AdjacencyMatrix<Matrix<Edge>, Node> {
     (std::move(std::function{std::move(lambda)}));
   }
 
-  [[nodiscard]] constexpr EdgeIterator AddEdge(NodeId from, EdgeIterator pos,
-                                               const Edge& edge) noexcept {
+  constexpr EdgeIterator AddEdge(NodeId from, EdgeIterator pos,
+                                 const Edge& edge) noexcept {
     if (!(from < BaseT::Order())) [[likely]] {
         assert(false && "Out of node index.");
       }
@@ -95,9 +94,7 @@ class DenseGraph : public AdjacencyMatrix<Matrix<Edge>, Node> {
     }
   }
 
-  constexpr void EraseEdges() noexcept {
-    assert(false); /* todo */
-  }
+  constexpr void EraseEdges() noexcept { assert(false); /* todo */ }
 };
 
 }  // namespace XEngine

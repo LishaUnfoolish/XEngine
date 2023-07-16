@@ -43,7 +43,7 @@ TEST_CASE("Scheduler scheduler config") {
   auto* config_ptr = XEngine::SchedulerConfig::Instance();
   config_ptr->SetConfigPath("/XEngine/conf/test.json");
   XEngine::SchedulingPolicy policy = config_ptr->GetPolicy();
-  DEBUG << (int)policy << std::endl;
+  XDEBUG << (int)policy << std::endl;
 }
 
 TEST_CASE("Scheduler test") {

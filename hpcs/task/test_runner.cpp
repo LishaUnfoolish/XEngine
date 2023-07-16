@@ -224,20 +224,24 @@ TEST_CASE("test_has_args_function_runner_benchmark") {
   XEngine::Graph<XEngine::DenseGraph<int, XEngine::RunnerStatus()>> graph{};
   XEngine::FlowBuilder builder{graph};
 
-  int count1 = 100;
+  int count1 = 0;
   for (int i = count1; i > 0; i--) {
     std::set<XEngine::NodeId> dep;
-    for (int k = 0; k < count1 - i; k++) { dep.insert(k); }
+    for (int k = 0; k < count1 - i; k++) {
+      dep.insert(k);
+    }
     auto ret = builder.Emplace(dep, "测试node10", []() {
       ++test_num;
       return XEngine::RunnerStatus{XEngine::RunnerStopReason::RunnerOk};
     });
   }
 
-  int count2 = 10000;
+  int count2 = 100;
   for (int i = count2; i > 0; i--) {
     auto ret = builder.Emplace({}, "测试node10", [s = i]() {
       // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      volatile int x = 999999;
+      while (x--) {}
       ++test_num;
       return XEngine::RunnerStatus{XEngine::RunnerStopReason::RunnerOk};
     });
@@ -248,9 +252,10 @@ TEST_CASE("test_has_args_function_runner_benchmark") {
   int count3 = 1000;
   test_num = 0;
   runner.Rebuild();
-  DEBUG << "start\n";
-  std::chrono::time_point<std::chrono::steady_clock> start_time_ =
-      std::chrono::steady_clock::now();
+  XDEBUG << "start\n";
+  // std::chrono::time_point<std::chrono::steady_clock> start_time_ =
+  //     std::chrono::steady_clock::now();
+  auto start_time = std::chrono::system_clock::now();
   // std::thread([] {
   //   while (true) {
   //     int in;
@@ -261,14 +266,15 @@ TEST_CASE("test_has_args_function_runner_benchmark") {
   //     });
   //   }
   // }).detach();
-  for (int i = count3; i > 0; i--) { runner.Run(); }
-  DEBUG << std::chrono::steady_clock::now() - start_time_ << std::endl;
+  for (int i = count3; i > 0; i--) {
+    runner.Run();
+  }
+  // XDEBUG << std::chrono::steady_clock::now() - start_time_ << std::endl;
+  auto end_time = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed_seconds = end_time - start_time;
+  XDEBUG << "消耗时间: " << elapsed_seconds.count() << "秒." << std::endl;
   REQUIRE(test_num == (count1 + count2) * count3);
 
   /* 因为Scheduler是个单例，所以得手动释放 */
   XEngine::SchedulerManager::Instance()->CleanUp();
-  // 0-32-100 0.038 0.0018381  0.0048762  没有没延负载 ts:0.00101707秒.
-  // 0-32-100 0.1439173 0.2176605  0.236163  milliseconds(1) ts:0.215866秒秒.
-  // 0-100-100 0.2231402 0.7521842  0.7070208  milliseconds(1) ts:0.740608秒.
-  // 0-10000-100 15.4600308 65.9998311  65.0809695 milliseconds(1) ts:65.944秒.
 }

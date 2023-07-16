@@ -13,7 +13,6 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <scheduler/processor.hpp>
 #include <shared_mutex>
 #include <stdexcept>
 #include <string>
@@ -22,10 +21,11 @@
 #include <utility>
 #include <vector>
 
-#include "common/macros.hpp"
-#include "core/semaphor.hpp"
-#include "scheduler/croutine.hpp"
-#include "scheduler/scheduler_config.hpp"
+#include "hpcs/common/macros.hpp"
+#include "hpcs/core/semaphor.hpp"
+#include "hpcs/scheduler/croutine.hpp"
+#include "hpcs/scheduler/processor.hpp"
+#include "hpcs/scheduler/scheduler_config.hpp"
 
 namespace XEngine {
 
@@ -76,7 +76,7 @@ class PoolContext : public Context {
             PoolContext::public_queue_q.begin(),
             PoolContext::public_queue_q.begin() + 1);
         // int size3 = private_queue_q.size();
-        // if (size3 != 0) { DEBUG << size3 << std::endl; }
+        // if (size3 != 0) { XDEBUG << size3 << std::endl; }
       }
     }
   }

@@ -1,5 +1,0 @@
-target("hpcs_benchmark")
-    add_cxxflags("-stdlib=libc++", {tools = "clang++"})
-    set_kind("binary")
-    add_files("**.cpp")
-    add_includedirs("../")

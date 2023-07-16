@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "common/macros.hpp"
-#include "graph/iterator_range.hpp"
+#include "hpcs/common/macros.hpp"
+#include "hpcs/graph/iterator_range.hpp"
 namespace XEngine {
 // template <typename T>
 // class Matrix {
@@ -131,7 +131,7 @@ class Matrix {
     m_data = other.m_data;
     return *this;
   }
-
+  virtual ~Matrix() = default;
   // 索引运算符
   std::vector<T>& operator[](NodeId index) { return m_data[index]; }
 

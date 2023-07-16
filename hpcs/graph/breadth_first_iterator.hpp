@@ -8,7 +8,7 @@
 
 #include <queue>
 
-#include "graph/adjacency_iterator.hpp"
+#include "hpcs/graph/adjacency_iterator.hpp"
 namespace XEngine {
 class Bool {
  public:

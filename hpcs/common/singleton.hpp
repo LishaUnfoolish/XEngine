@@ -4,7 +4,7 @@
 @Time: 2023/04/10
 ***************************/
 #pragma once
-#include "common/macros.hpp"
+#include "hpcs/common/macros.hpp"
 
 HAS_MEMBER_TRAITS(Shutdown);
 

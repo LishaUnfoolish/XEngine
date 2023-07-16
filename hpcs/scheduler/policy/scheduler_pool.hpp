@@ -10,18 +10,18 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common/singleton.hpp"
-#include "scheduler/policy/pool_context.hpp"
-#include "scheduler/processor.hpp"
-#include "scheduler/scheduler.hpp"
-#include "scheduler/scheduler_config.hpp"
+#include "hpcs/common/singleton.hpp"
+#include "hpcs/scheduler/policy/pool_context.hpp"
+#include "hpcs/scheduler/processor.hpp"
+#include "hpcs/scheduler/scheduler.hpp"
+#include "hpcs/scheduler/scheduler_config.hpp"
 namespace XEngine {
 class SchedulerPool : public Scheduler {
  public:
   SchedulerPool() {
     auto* config = SchedulerConfig::Instance();
     if (config == nullptr) {
-      ERROR << "SchedulerConfig is nullprt.\n";
+      XERROR << "SchedulerConfig is nullprt.\n";
       return;
     }
 

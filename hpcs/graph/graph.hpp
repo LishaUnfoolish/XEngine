@@ -18,7 +18,7 @@ class Graph : public Impl {
   using EdgeType = typename Impl::EdgeType;
   using NodeType = typename Impl::NodeType;
   using NodeIdType = NodeId;
-
+  virtual ~Graph() = default;
   // [[nodiscard]] constexpr std::uint32_t Outdegree(
   //     const NodeId& node_index) const noexcept {
   //   decltype(auto) outedge_iterator = Impl::OutEdges(node_index);

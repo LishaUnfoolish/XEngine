@@ -5,11 +5,10 @@
 ***************************/
 #pragma once
 #include <cassert>
-
 #include <queue>
 #include <type_traits>
 
-#include "graph/adjacency_iterator.hpp"
+#include "hpcs/graph/adjacency_iterator.hpp"
 namespace XEngine {
 template <typename Dag>
 class TopologySort {

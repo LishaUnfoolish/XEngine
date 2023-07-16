@@ -17,13 +17,13 @@
 #include <utility>
 #include <vector>
 
-#include "common/singleton.hpp"
-#include "core/spin_lock.hpp"
-#include "scheduler/policy/scheduler_pool.hpp"
-#include "scheduler/policy/scheduler_priority.hpp"
-#include "scheduler/scheduler.hpp"
-#include "scheduler/scheduler_config.hpp"
-#include "scheduler/scheduler_policy.hpp"
+#include "hpcs/common/singleton.hpp"
+#include "hpcs/core/spin_lock.hpp"
+#include "hpcs/scheduler/policy/scheduler_pool.hpp"
+#include "hpcs/scheduler/policy/scheduler_priority.hpp"
+#include "hpcs/scheduler/scheduler.hpp"
+#include "hpcs/scheduler/scheduler_config.hpp"
+#include "hpcs/scheduler/scheduler_policy.hpp"
 namespace XEngine {
 class SchedulerManager {
  public:
@@ -66,14 +66,14 @@ Scheduler* Scheduler::Instance() {
         if (!XEngine::SchedulerConfig::AffinityCpuset(
                 pthread_self(),
                 SchedulerConfig::Instance()->GetProcessAffinityCpuset())) {
-          ERROR << "Failed to set affinity.\n";
+          XERROR << "Failed to set affinity.\n";
         }
         SchedulingPolicy policy = SchedulerConfig::Instance()->GetPolicy();
         if (policy == SchedulingPolicy::PRIORITY) [[unlikely]] {
             obj = new SchedulerPriority();
           }
         else {
-          ERROR << "No found " << (int)policy << ", use default param.\n";
+          XERROR << "No found " << (int)policy << ", use default param.\n";
           assert(false && "policy no find.");
         }
 
