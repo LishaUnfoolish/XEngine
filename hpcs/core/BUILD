@@ -24,7 +24,7 @@ cc_library(
     hdrs = ["spin_lock.hpp"],
 )
 
-cc_binary(
+cc_test(
     name = "test_signal",
     srcs = ["test_signal.cpp"],
     deps = [

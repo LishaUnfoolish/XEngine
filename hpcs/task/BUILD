@@ -31,7 +31,7 @@ cc_library(
     ],
 )
 
-cc_binary(
+cc_test(
     name = "test_flow_builder",
     srcs = [
         "test_flow_builder.cpp",
@@ -44,7 +44,7 @@ cc_binary(
     ],
 )
 
-cc_binary(
+cc_test(
     name = "test_runner",
     srcs = [
         "test_runner.cpp",

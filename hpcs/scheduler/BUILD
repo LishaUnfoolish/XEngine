@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -44,4 +44,15 @@ cc_library(
 cc_library(
     name = "awaitable_traits",
     hdrs = ["awaitable_traits.hpp"],
+)
+
+cc_test(
+    name = "test_scheduler",
+    srcs = [
+        "test_scheduler.cpp",
+    ],
+    deps = [
+        "//hpcs/common:catch",
+        "//hpcs/scheduler:scheduler_policy",
+    ],
 )

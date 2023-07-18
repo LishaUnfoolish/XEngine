@@ -126,7 +126,7 @@ cc_library(
     ],
 )
 
-cc_binary(
+cc_test(
     name = "test_graph",
     srcs = [
         "test_graph.cpp",
@@ -138,7 +138,7 @@ cc_binary(
     ],
 )
 
-cc_binary(
+cc_test(
     name = "test_adjacency_list",
     srcs = [
         "test_adjacency_list.cpp",
@@ -149,7 +149,7 @@ cc_binary(
     ],
 )
 
-cc_binary(
+cc_test(
     name = "test_matrix",
     srcs = [
         "test_matrix.cpp",

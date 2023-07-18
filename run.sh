@@ -6,6 +6,8 @@
 # @Desc: 编译运行脚本
 # ***************************/
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/" && pwd -P)"
+CONPILER="--config=clang"
+JOBS_THREAD=$(($(nproc) - 2))
 function _usage() {
   echo -e "\n${RED}Usage${NO_COLOR}:
     .${BOLD}/run.sh${NO_COLOR} [OPTION]"
@@ -14,17 +16,18 @@ function _usage() {
     ${BLUE}build_dbg [module]${NO_COLOR}: run bdg build.
     ${BLUE}hpcs_benchmark${NO_COLOR}: run hpcs_benchmark
     ${BLUE}compile_commands${NO_COLOR}: run compile_commands
-    ${BLUE}run_unit_test${NO_COLOR}: run unit_test
+    ${BLUE}run_unit_opt_test${NO_COLOR}: run run_unit_opt_test
+    ${BLUE}run_unit_dbg_test${NO_COLOR}: run run_unit_dbg_test
     "
 }
 
 function build_opt() {
   # build all release
-  bazel build --config=clang ... --jobs=$(($(nproc) - 2)) -c opt
+  bazel build $CONPILER ... --jobs=$JOBS_THREAD -c opt
 }
 
 function build_dbg() {
-  bazel build --config=clang ... --jobs=$(($(nproc) - 2)) -c dbg
+  bazel build $CONPILER ... --jobs=$JOBS_THREAD -c dbg
 }
 
 function hpcs_benchmark() {
@@ -35,17 +38,12 @@ function compile_commands() {
   ${ROOT_DIR}/scripts/gtage.sh
   # xmake project -k compile_commands
 }
-function unit_test() {
-  target=(
-    "hpcs_benchmark"
-    "test_flow_builder"
-    "test_graph"
-    "test_runner"
-    "test_signal"
-  )
-  for i in ${target[@]}; do
-    xmake run $i
-  done
+function run_unit_opt_test() {
+  bazel test $CONPILER ... --jobs=$JOBS_THREAD -c opt
+}
+
+function run_unit_dbg_test() {
+  bazel test $CONPILER ... --jobs=$JOBS_THREAD -c dbg
 }
 
 function main() {
@@ -68,8 +66,11 @@ function main() {
   compile_commands)
     compile_commands "$@"
     ;;
-  run_unit_test)
-    unit_test "$@"
+  run_unit_opt_test)
+    run_unit_opt_test "$@"
+    ;;
+  run_unit_dbg_test)
+    run_unit_dbg_test "$@"
     ;;
   *)
     _usage
