@@ -59,7 +59,6 @@ function start_containers() {
     docker rm -v -f $RUN_DEV 1>/dev/null
   fi
 
-  LOCAL_HOST=$(hostname)
   DOCKER_HOME="/home/$USER"
   if [ "$USER" == "root" ]; then
     DOCKER_HOME="/root"
@@ -70,24 +69,33 @@ function start_containers() {
 
   printf "Starting docker container \"${RUN_DEV}\" ..."
 
+  MAX_CPU_FOR_DOCKER=$(($(nproc) - 1))
+  CPUSETS="0-$MAX_CPU_FOR_DOCKER"
+  NVIDIA_OPTION="--runtime=nvidia"
+  NVIDIA_DRIVER_CAPABILITIES="all"
+  HOST_NAME=$(hostname)
   DOCKER_RUN="docker run"
   set -x
-  ${DOCKER_RUN} -it \
-    -d \
+  ${DOCKER_RUN} -itd \
+    $NVIDIA_OPTION \
+    --cpuset-cpus=$CPUSETS \
     --privileged \
     --name $RUN_DEV \
+    --gpus all \
+    -e NVIDIA_DRIVER_CAPABILITIES="$NVIDIA_DRIVER_CAPABILITIES" \
     -e DOCKER_USER=$USER \
     -e USER=$USER \
     -e DOCKER_USER_ID=$USER_ID \
     -e DOCKER_GRP="$GRP" \
     -e DOCKER_GRP_ID=$GRP_ID \
     -e DOCKER_IMG=$DOCKER_IMAGE \
+    -e CC=/usr/local/bin/clang-17.0.1 \
+    -e CXX=/usr/local/bin/clang++-17.0.1 \
     -v $ROOT_DIR:/${PROJECT_NAME} \
     --net host \
     -w /${PROJECT_NAME} \
-    --add-host in_dev_docker:127.0.0.1 \
-    --add-host ${LOCAL_HOST}:127.0.0.1 \
-    --hostname in_dev_docker \
+    --add-host ${HOST_NAME}:127.0.0.1 \
+    --hostname $HOST_NAME \
     --shm-size 2G \
     --pid=host \
     -e DISPLAY=$DISPLAY \

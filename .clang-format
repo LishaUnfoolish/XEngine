@@ -4,7 +4,7 @@ BasedOnStyle: Google
 Language:                               Cpp
 Cpp11BracedListStyle:                   true
 Standard:                               Cpp11
-# Clang-format version 15.0 
+# Clang-format version 17.0.1
 # Mimic cpplint style
 IncludeCategories:
   # Note that the "main" header is priority 0
@@ -13,4 +13,5 @@ IncludeCategories:
 CommentPragmas: '^ NOLINT'
 DerivePointerAlignment: false
 AllowShortBlocksOnASingleLine: Empty
+IndentWidth: 2
 ---

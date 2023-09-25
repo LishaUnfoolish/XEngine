@@ -41,11 +41,6 @@ cc_library(
     hdrs = ["scheduler.hpp"],
 )
 
-cc_library(
-    name = "awaitable_traits",
-    hdrs = ["awaitable_traits.hpp"],
-)
-
 cc_test(
     name = "test_scheduler",
     srcs = [

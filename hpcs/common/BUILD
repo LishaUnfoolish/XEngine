@@ -12,6 +12,7 @@ cc_library(
     hdrs = ["catch.hpp"],
 )
 
+
 cc_library(
     name = "log",
     hdrs = ["log.hpp"],
@@ -26,7 +27,7 @@ cc_library(
     name = "singleton",
     hdrs = ["singleton.hpp"],
     deps = [
-        "//hpcs/common:macros"
+        "//hpcs/common:macros",
     ],
 )
 
@@ -34,6 +35,11 @@ cc_library(
     name = "futex",
     hdrs = ["futex.hpp"],
     deps = [
-        "//hpcs/common:macros"
+        "//hpcs/common:macros",
     ],
+)
+
+cc_test(
+    name = "crtp_test",
+    srcs = ["crtp_test.cpp"],
 )

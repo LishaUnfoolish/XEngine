@@ -12,33 +12,33 @@
 #include <type_traits>
 
 namespace XEngine {
-#define HAS_MEMBER_TRAITS(name)                             \
-  template <typename T, typename... Args>                   \
-  static constexpr bool HasMember##name = requires(T&& t) { \
-    { t.name(std::forward<Args>()...) };                    \
+#define HAS_MEMBER_TRAITS(name)                                              \
+  template <typename T, typename... Args>                                    \
+  [[maybe_unused]] static constexpr bool HasMember##name = requires(T&& t) { \
+    { t.name(std::forward<Args>()...) };                                     \
   };
 
 #define HAS_MEMBER_RET_TRAITS(name)                                            \
   template <typename T, typename Ret, typename... Args>                        \
-  static constexpr bool HasRetMember##name = requires(T&& t) {                 \
+  [[maybe_unused]] static constexpr bool HasRetMember##name = requires(T&& t) {                 \
     { t.name(std::forward<Args>()...) };                                       \
     requires std::is_same_v<Ret, decltype(T{}.name(std::forward<Args>()...))>; \
   };
 
 #define HAS_STATIC_MEMBER_TRAITS(name)                     \
   template <typename T, typename... Args>                  \
-  static constexpr bool HasStaticMember##name = requires { \
+  [[maybe_unused]] static constexpr bool HasStaticMember##name = requires { \
     { T::name(std::declval<Args>()...) };                  \
   };
 
 #define HAS_OPERATOR_TRAITS(op, name)                         \
   template <typename T, typename... Args>                     \
-  static constexpr bool HasOperator##name = requires(T&& t) { \
+  [[maybe_unused]] static constexpr bool HasOperator##name = requires(T&& t) { \
     { t.operator op(std::forward<Args>()...) };               \
   };
 
 using NodeId = std::uint32_t;
-inline static constexpr NodeId NodeIdNone = std::numeric_limits<NodeId>::max();
+[[maybe_unused]] inline static constexpr NodeId NodeIdNone = std::numeric_limits<NodeId>::max();
 
 // https://en.cppreference.com/w/cpp/thread/hardware_destructive_interference_size
 #ifdef __cpp_lib_hardware_interference_size

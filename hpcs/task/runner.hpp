@@ -187,9 +187,9 @@ class Runner {
   CheckLimits() noexcept {
     [[likely]] if (time_limit_.has_value()) [[likely]] {
       const auto& elapsed = std::chrono::steady_clock::now() - start_time_;
-      XINFO << "run time :" << elapsed << std::endl;
+      XINFO << "run time :" << std::to_string(elapsed.count()) << std::endl;
       [[unlikely]] if (elapsed > time_limit_.value()) [[unlikely]] {
-        XERROR << "Time limit :" << elapsed << std::endl;
+        XINFO << "run time :" << std::to_string(elapsed.count()) << std::endl;
         return RunnerStopReason::RunnerTimeLimit;
       }
     }

@@ -42,7 +42,7 @@ class BfIterator {
     if (start_node != NodeIdNone) { Start(start_node); }
   }
 
-  [[nodiscard]] constexpr decltype(auto) operator++() noexcept {
+  constexpr decltype(auto) operator++() noexcept {
     ToNext();
     return *this;
   }

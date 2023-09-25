@@ -6,7 +6,6 @@ GREEN='\033[32m'
 WHITE='\033[34m'
 YELLOW='\033[33m'
 NO_COLOR='\033[0m'
-
 function info() {
     (>&2 echo -e "[${WHITE}${BOLD}INFO${NO_COLOR}] $*")
 }
@@ -24,7 +23,7 @@ function ok() {
 }
 
 export PROJECT_NAME="xengine"
-export DOCKER_IMAGE="lixiaoxmm/xengine:v1.6"
+export DOCKER_IMAGE="lixiaoxmm/xengine:v1.16"
 export USER_ID=$(id -u)
 export GRP=$(id -g -n)
 export GRP_ID=$(id -g)

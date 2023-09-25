@@ -15,12 +15,43 @@ namespace internal {
 #define USED_FULL_TYPE_NAME false  //使用详细type name,is not a literal type.
 #if USED_FULL_TYPE_NAME
 #include <cxxabi.h>
+
+// https://godbolt.org/z/e3rb9znaP
+// namespace diagnostic {
+// std::string demangle(const std::type_info& info) noexcept {
+//   using buffer_t = std::unique_ptr<char, decltype(&std::free)>;
+
+//   int status;
+//   buffer_t buffer{abi::__cxa_demangle(info.name(), nullptr, nullptr,
+//   &status),
+//                   &std::free};
+//   return 0 == status ? buffer.get() : "";
+// }
+
+// template <typename T>
+// std::string demangle() noexcept {
+//   return demangle(typeid(T));
+// }
+// }  // namespace diagnostic
+
+// int main(int argc, char** argv) {
+//   // examples
+//   std::cout << diagnostic::demangle(typeid(int)) << '\n';
+//   std::cout << diagnostic::demangle(typeid(std::vector<int>)) << '\n';
+
+//   std::cout << diagnostic::demangle<int>() << '\n';
+//   std::cout << diagnostic::demangle<std::vector<int>>() << '\n';
+
+//   ::testing::InitGoogleTest(&argc, argv);
+//   return RUN_ALL_TESTS();
+// }
+
 template <typename T>
 struct TypeName final {
-  const char *name;
+  const char* name;
   TypeName() : name(abi::__cxa_demangle(typeid(T).name(), 0, 0, nullptr)) {}
-  ~TypeName() { std::free((void *)name); }
-  constexpr operator const char *() { return name; }
+  ~TypeName() { std::free((void*)name); }
+  constexpr operator const char*() { return name; }
 };
 
 #else

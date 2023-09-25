@@ -66,8 +66,13 @@ TEST_CASE("test_runner") {
   REQUIRE(test_num == 0);
   XEngine::Runner runner{builder};
   // graph.Graphviz();
-  runner.Rebuild();
-  runner.Run<XEngine::RunnerStatus>();
+  if (!runner.Rebuild()) {
+    XERROR << "Failed to rebuild";
+  }
+  if(!runner.Run<XEngine::RunnerStatus>())
+  {
+    XERROR << "Failed to Run";
+  }
   REQUIRE(test_num == 10);
 
   graph.EraseNode(2);
@@ -77,8 +82,13 @@ TEST_CASE("test_runner") {
 
   test_num = 0;
   // graph.Graphviz();
-  runner.Rebuild();
-  runner.Run<XEngine::RunnerStatus>();
+  if (!runner.Rebuild()) {
+    XERROR << "Failed to rebuild";
+  }
+  if(!runner.Run<XEngine::RunnerStatus>())
+  {
+    XERROR << "Failed to Run";
+  }
   REQUIRE(test_num == 9);
 }
 
@@ -126,8 +136,13 @@ TEST_CASE("test_function_runner") {
   REQUIRE(test_num == 0);
   XEngine::Runner runner{builder};
   // graph.Graphviz();
-  runner.Rebuild();
-  runner.Run<XEngine::RunnerStatus>();
+  if (!runner.Rebuild()) {
+    XERROR << "Failed to rebuild";
+  }
+  if(!runner.Run<XEngine::RunnerStatus>())
+  {
+    XERROR << "Failed to Run";
+  }
   REQUIRE(test_num == 10);
 
   graph.EraseNode(2);
@@ -137,8 +152,13 @@ TEST_CASE("test_function_runner") {
 
   test_num = 0;
   // graph.Graphviz();
-  runner.Rebuild();
-  runner.Run<XEngine::RunnerStatus>();
+  if (!runner.Rebuild()) {
+    XERROR << "Failed to rebuild";
+  }
+  if(!runner.Run<XEngine::RunnerStatus>())
+  {
+    XERROR << "Failed to Run";
+  }
   REQUIRE(test_num == 9);
 }
 
@@ -199,7 +219,9 @@ TEST_CASE("test_has_args_function_runner") {
   // graph.Graphviz();
   const int& a = 1;
   const int& b = 2;
-  runner.Rebuild();
+  if (!runner.Rebuild()) {
+    XERROR << "Failed to rebuild";
+  }
   auto rrr = runner.Run(a, b);
   REQUIRE(test_num == 10);
   REQUIRE(sum == 3);
@@ -214,8 +236,13 @@ TEST_CASE("test_has_args_function_runner") {
   // // graph.Graphviz();
   const int& c = 3;
   const int& d = 4;
-  runner.Rebuild();
-  runner.Run(c, d);
+  if (!runner.Rebuild()) {
+    XERROR << "Failed to rebuild";
+  }
+  if(!runner.Run(c, d))
+  {
+    XERROR << "Failed to Run";
+  }
   REQUIRE(sum == 7);
   REQUIRE(test_num == 9);
 }
@@ -224,24 +251,25 @@ TEST_CASE("test_has_args_function_runner_benchmark") {
   XEngine::Graph<XEngine::DenseGraph<int, XEngine::RunnerStatus()>> graph{};
   XEngine::FlowBuilder builder{graph};
 
-  int count1 = 0;
+  [[maybe_unused]]const int count1 = 0;
   for (int i = count1; i > 0; i--) {
     std::set<XEngine::NodeId> dep;
     for (int k = 0; k < count1 - i; k++) {
       dep.insert(k);
     }
-    auto ret = builder.Emplace(dep, "测试node10", []() {
+    [[maybe_unused]]auto ret = builder.Emplace(dep, "测试node10", []() {
       ++test_num;
       return XEngine::RunnerStatus{XEngine::RunnerStopReason::RunnerOk};
     });
   }
 
-  int count2 = 100;
+  const int count2 = 100;
   for (int i = count2; i > 0; i--) {
-    auto ret = builder.Emplace({}, "测试node10", [s = i]() {
+   [[maybe_unused]] auto ret = builder.Emplace({}, "测试node10", []() {
       // std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      volatile int x = 999999;
-      while (x--) {}
+      // std::atomic<int> x = 999999;
+      // while (std::atomic_fetch_sub(&x, 1) > 0) {
+      // }
       ++test_num;
       return XEngine::RunnerStatus{XEngine::RunnerStopReason::RunnerOk};
     });
@@ -249,9 +277,11 @@ TEST_CASE("test_has_args_function_runner_benchmark") {
 
   XEngine::Runner runner{builder};
   graph.Graphviz("test_has_args_function_runner_benchmark.svg");
-  int count3 = 1000;
+  const int count3 = 1000;
   test_num = 0;
-  runner.Rebuild();
+  if (!runner.Rebuild()) {
+    XERROR << "Failed to rebuild";
+  }
   XDEBUG << "start\n";
   // std::chrono::time_point<std::chrono::steady_clock> start_time_ =
   //     std::chrono::steady_clock::now();
@@ -267,7 +297,10 @@ TEST_CASE("test_has_args_function_runner_benchmark") {
   //   }
   // }).detach();
   for (int i = count3; i > 0; i--) {
-    runner.Run();
+    if(!runner.Run())
+    {
+      XERROR << "Failed to run.";
+    }
   }
   // XDEBUG << std::chrono::steady_clock::now() - start_time_ << std::endl;
   auto end_time = std::chrono::system_clock::now();

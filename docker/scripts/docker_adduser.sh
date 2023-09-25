@@ -11,6 +11,7 @@ usermod -aG sudo "$DOCKER_USER"
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 echo '
 ulimit -c unlimited
+source /usr/local/lib/bazel/bin/bazel-complete.bash
 ' >> "/home/${DOCKER_USER}/.bashrc"
 
 echo '

@@ -1,4 +1,4 @@
-# Clang 15.0.7
+# Clang 17.0.1
 # https://cloud.tencent.com/developer/ask/sof/106690780
 
 build:dbg -c dbg
