@@ -14,3 +14,8 @@ new_local_repository(
     build_file = "third_party/tensorrt.BUILD",
     path = "/usr",
 )
+new_local_repository(
+    name = "opencv4",
+    build_file = "third_party/opencv4.BUILD",
+    path = "/usr/local",
+)
