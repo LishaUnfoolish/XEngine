@@ -22,6 +22,6 @@
 2.flow builder模块可配合graph做各种任务构建workflow。(https://github.com/LishaUnfoolish/XEngine/blob/master/hpcs/task/flow_builder.hpp)<br>
 3.runner模块负责执行builder构建的workflow,现阶段通过feature做一步,后续会在task目录增加协程调度.(https://github.com/LishaUnfoolish/XEngine/blob/master/hpcs/task/runner.hpp)<br>
 4.scheduler模块为协程池的调度器,目前只实现了一个简单的调度器,类似GMP的架构,后续会增加不同policy的调度器,比如:优先级调度器,时间片调度器,抢占式调度器等等,可通过编写Json配置文件配置.<br>
-5.增加cuda环境和测试代码
+5.增加cuda opencv环境和测试代码
 
 
