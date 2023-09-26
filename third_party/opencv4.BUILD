@@ -40,6 +40,7 @@ cc_library(
         "-pthread",
     ],
     deps = [
+        # "@zlib",
     ],
 )
 
