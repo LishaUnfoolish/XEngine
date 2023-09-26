@@ -6,7 +6,11 @@
 # @Desc: 编译运行脚本
 # ***************************/
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/" && pwd -P)"
-CONPILER="--config=clang"
+source /${ROOT_DIR}/docker/scripts/setup.bash
+source /${ROOT_DIR}/docker/scripts/docker_common.sh
+CONPILER="--config=clang --disk_cache=/${PROJECT_NAME}/.cache"
+COMPILE_COMMANDS_JSON="compile_commands.json"
+COMPILE_COMMANDS_FILES="//hpcs/..."
 JOBS_THREAD=$(($(nproc) - 2))
 function _usage() {
   echo -e "\n${RED}Usage${NO_COLOR}:
@@ -23,9 +27,7 @@ function _usage() {
 }
 
 
-COMPILE_COMMANDS_JSON="compile_commands.json"
-COMPILE_COMMANDS_FILES="//hpcs/..."
-source /${ROOT_DIR}/docker/scripts/setup.bash
+
 function clang_tidy() {
   TIDY_FILE=${ROOT_DIR}/hpcs/
   compile_commands ${COMPILE_COMMANDS_FILES}

@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        // {
+        //     "name": "lldb core",
+        //     "type": "lldb",
+        //     "request": "custom",
+        //     "targetCreateCommands": [
+        //         "target create ${workspaceRoot}/ core"
+        //     ],
+        //     "sourceMap": {
+        //         "/proc/self/cwd": "${workspaceFolder}"
+        //     },
+        //     "sourceLanguages": [
+        //         "c++"
+        //     ]
+        // },
+        {
+            "name": "lldb launch",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/hpcs/libunifex/static_thread_pool_test",
+            "args": [],
+            "stopOnEntry": false,
+            "relativePathBase":"${workspaceFolder}/./bazel-bin/hpcs/libunifex/",
+            "sourceMap": {
+                "/proc/self/cwd": "${workspaceFolder}"
+            },
+          },
+    ]
+}
